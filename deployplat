@@ -1,0 +1,35 @@
+#!/bin/bash
+# Run this from the top level BOD project dir.
+
+WORK_DIR=`pwd`
+echo Deploying platform from "${WORK_DIR}"
+
+CONTAINER_ROOT_DIR="/var/lib/tomcat6/webapps/ROOT"
+
+APP_DIR=`ls -d engine/target/*/ | grep platform-engine`
+DEPLOY_BASE="${WORK_DIR}"/"${APP_DIR}"
+
+META_DIR="${DEPLOY_BASE}"META-INF
+WEB_DIR="${DEPLOY_BASE}"WEB-INF
+
+if [ "$1" == "--gwt" ]
+then
+    RPC_DIR="${WORK_DIR}"/gwt/ui/war/AtomSphere
+    RPCW_DIR="${WORK_DIR}"/gwt/ui/war/WidgetSphere
+    MDM_DIR="${WORK_DIR}"/gwt/ui/war/MdmSphere
+else
+    RPC_DIR="${DEPLOY_BASE}"AtomSphere
+    RPCW_DIR="${DEPLOY_BASE}"WidgetSphere
+    MDM_DIR="${DEPLOY_BASE}"MdmSphere
+fi
+
+DIRS=("${META_DIR}" "${WEB_DIR}" "${RPC_DIR}" "${RPCW_DIR}" "${MDM_DIR}")
+
+for DIR in ${DIRS[@]}
+do
+    echo $DIR
+    rm -rf "${CONTAINER_ROOT_DIR}"/"`basename ${DIR}`"
+    ln -s -t "${CONTAINER_ROOT_DIR}" "${DIR}"
+    echo
+done
+
