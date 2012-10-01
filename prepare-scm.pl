@@ -2,6 +2,8 @@
 
 use strict;
 
+my $bypass = "<!--mark--><set-property name=\"user.agent\" value=\"gecko1_8\"/><!--eom-->";
+
 # more gwt bullshit
 my $gwtpom = "gwt/pom.xml";
 my $asfile = "gwt/ui/src/main/java/com/boomi/gwt/AtomSphere.gwt.xml";
@@ -35,9 +37,9 @@ sub fix_gwt_useragent
 
     if($op eq $chkin)
     {
-        $lines =~ s/<set-property (\s?)name=\"user\.agent\" value=\"gecko1_8\"(\s?)\/>/<!--$1set-property name=\"user\.agent\" value=\"gecko1_8\"$2\/-->/;
+        $lines =~ s/\n^$bypass$//m;
     } else {
-        $lines =~ s/<!--(\s)?set-property name=\"user\.agent\" value=\"gecko1_8\"(\s?)\/-->/<set-property$1 name=\"user\.agent\" value=\"gecko1_8\"$2\/>/;
+        $lines =~ s/(.*set-property.*name=\"user\.agent.*)/$1\n$bypass/;
     }
     rewrite_file($file, $lines);
 }
