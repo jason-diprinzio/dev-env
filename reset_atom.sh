@@ -47,10 +47,7 @@ if [ ${START} -eq 1 ] ; then
     then
         bin/atom stop
     else
-        bin/atom0 stop
-        bin/atom1 stop
-        bin/atom2 stop
-        bin/atom3 stop
+        ~/bin/cloudctl stop
     fi
 fi
 
@@ -125,13 +122,7 @@ if [ ${START} -eq 1 ] ; then
     then
         bin/atom start
     else
-        bin/atom0 start
-        sleep .666
-        bin/atom1 start
-        sleep .666
-        bin/atom2 start
-        sleep .666
-        bin/atom3 start
+        ~/bin/cloudctl start
     fi
 fi
 

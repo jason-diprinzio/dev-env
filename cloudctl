@@ -1,0 +1,19 @@
+#!/bin/bash
+
+NODE_COUNT=4
+op=$1
+
+if [ -z $op ]
+then
+    echo "usage: `basename $0` [start|stop]"
+    exit 1
+fi
+
+i=0
+while [ $i -lt $NODE_COUNT ]
+do 
+    ./bin/atom$i $op
+    i=$(($i+1));
+    sleep .666
+done
+
