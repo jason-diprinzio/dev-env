@@ -80,6 +80,7 @@ if [ -d "${ATOM_SRC_DIR}" ] ; then
         install_zip "base" ${ATOM_SRC_DIR}/dist/target/container-dist-*.zip
         install_zip "groovy" ${ATOM_SRC_DIR}/shared-server/groovy-dist/target/container-groovy-dist-*.zip
         install_zip "embeddb" ${ATOM_SRC_DIR}/shared-server/embedded-db-dist/target/container-embedded-db-dist-*.zip
+        install_zip "extsec" ${ATOM_SRC_DIR}/shared-server/extended-security-dist/target/container-extended-security-dist-*.zip
     fi
 
     if [ ${CLOUD} -eq 1 ] ; then
@@ -93,7 +94,6 @@ if [ -d "${ATOM_SRC_DIR}" ] ; then
 
     if [ ${HTTP} -eq 1 ] ; then
         install_zip "http" ${ATOM_SRC_DIR}/shared-server/http-dist/target/container-shared-server-http-dist-*.zip
-        install_zip "extsec" ${ATOM_SRC_DIR}/shared-server/extended-security-dist/target/container-extended-security-dist-*.zip
     fi
 
     if [ ${PROXY} -eq 1 ] ; then
