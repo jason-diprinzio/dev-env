@@ -16,9 +16,9 @@ then
     exit 1
 fi
 
-if [ -z ${UPDATE_DIR} ]
+if [ -z ${PLATFORM_BASE_DIR} ]
 then
-    UPDATE_DIR=/var/lib/tomcat6/updates
+    PLATFORM_BASE_DIR=/var/lib/tomcat6
 fi
 
 if [ -z ${CON_SRC_DIR} ]
@@ -51,14 +51,22 @@ then
     mkdir -p connector/${DST_CON_TYPE}
     cp ${SRC_CON_ZIP} connector/${DST_CON_TYPE}/connector-*.zip
 else
-    #Install into platform
-    CON_UPDATE_DIR=${UPDATE_DIR}/connectors/${DST_CON_TYPE}
+    CON_INSTALL_DIR=${PLATFORM_BASE_DIR}/connector/${DST_CON_TYPE} 
+    mkdir -p ${CON_INSTALL_DIR}
+
+    CON_UPDATE_DIR=${PLATFORM_BASE_DIR}/updates/connectors/${DST_CON_TYPE}
     mkdir -p ${CON_UPDATE_DIR}
-    DEST_FILE=${CON_UPDATE_DIR}/connector-${DST_CON_TYPE}-${CON_VERSION}-car.zip
+
+    #Install into platform
+    DEST_FILE=${CON_INSTALL_DIR}/connector-${DST_CON_TYPE}-${CON_VERSION}-car.zip
 
     echo "Installing connector ${DST_CON_TYPE}" ${SRC_CON_ZIP} "to" ${DEST_FILE}
     cp ${SRC_CON_ZIP} ${DEST_FILE}
+    echo "Creating MD5 digest for ${DEST_FILE}"
     ~/bin/md5file.sh ${DEST_FILE}
+
+    cp ${DEST_FILE} ${CON_UPDATE_DIR}
+    cp ${DEST_FILE}.MD5 ${CON_UPDATE_DIR}
 
     url="http://localhost:8081/update/ConnectorDownload/${CON_VERSION}?connectorType=${DST_CON_TYPE}"
     echo $url

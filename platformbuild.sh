@@ -11,7 +11,7 @@ fi
 
 ~/bin/fix-platform-build.pl co
 
-mvn -DskipTests clean install
+time mvn -DskipTests clean install
 
 buildresult=$?
 
