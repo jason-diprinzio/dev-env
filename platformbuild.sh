@@ -22,7 +22,7 @@ then
     exit 2
 fi
 
-sudo -E ~/bin/deployplat --gwt
+sudo -E ~/bin/deployplat $@
 
 sudo /etc/init.d/tomcat6 restart
 
