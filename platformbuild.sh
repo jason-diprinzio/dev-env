@@ -9,7 +9,10 @@ then
     exit 1
 fi
 
-~/bin/fix-platform-build.pl co
+if [ "$1" == "--gwt" ]
+then
+    ~/bin/fix-platform-build.pl co
+fi
 
 time mvn -DskipTests clean install
 
