@@ -47,7 +47,7 @@ inline void timestamp()
 inline void watch_event(const char *msg, const char *filename, const path_watcher *watches, const struct inotify_event *event)
 {
     timestamp();
-    fprintf(stdout, "[filename=%s,wd=%d,mask=x%08x,cookie=%u] ", filename, event->wd, event->mask, event->cookie);
+    fprintf(stdout, "[wd=%d,mask=x%08x,cookie=%u,length=%d] ", event->wd, event->mask, event->cookie, event->len);
     fprintf(stdout, "file [%s] in watched path [%s] event [%s]", filename, watches[event->wd].watchpath, msg);
 }
 
@@ -92,7 +92,7 @@ inline int stat_file(const char *filename)
     int gmode   = (statbuf.st_mode >> 3)& 0x00000007;
     int othmode = (statbuf.st_mode >> 0)& 0x00000007;
     
-    fprintf(stdout, "\nsize: %ld, blocks: %ld, inode: %ld, type: %s\nmode: %x%x%x%x uid: %u, gid: %u\nAccess: %ld\nModify: %ld\nChange: %ld\n",
+    fprintf(stdout, "\nsize: %ld, blocks: %ld, inode: %ld, type: %s\nmode: %x%x%x%x, uid: %u, gid: %u\nAccess: %ld\nModify: %ld\nChange: %ld\n",
         statbuf.st_size, statbuf.st_blocks,
         statbuf.st_ino, type, sbit,omode, gmode, othmode,
         statbuf.st_uid, statbuf.st_gid,
