@@ -72,7 +72,6 @@ inline int print_file(const char *filename)
 
 inline int format_timestamp(const time_t *timestamp, char *buf)
 {
-    printf("timestamp: %ld\n", *timestamp);
     struct tm *timedata; 
     timedata = localtime(timestamp);
     strftime(buf, 128, "%F %T", timedata);
