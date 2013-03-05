@@ -3,7 +3,7 @@
 if [ $# -eq 0 ] ; then
     echo "Installs all the distribution files from a local container build to a local platform instance."
     echo 
-    echo "Usage: $0 [-c <container_dir>] [-u <update_dir>] <build_number>"
+    echo "Usage: `basename $0` [-c <container_dir>] [-u <update_dir>] <build_number>"
     exit 0
 fi
 
