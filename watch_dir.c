@@ -70,6 +70,15 @@ inline int print_file(const char *filename)
     return 0;
 }
 
+inline int format_timestamp(const time_t *timestamp, char *buf)
+{
+    printf("timestamp: %ld\n", *timestamp);
+    struct tm *timedata; 
+    timedata = localtime(timestamp);
+    strftime(buf, 128, "%F %T", timedata);
+    return 0;
+}
+
 inline int stat_file(const char *filename)
 {
     struct stat statbuf;
@@ -79,7 +88,7 @@ inline int stat_file(const char *filename)
     }
 
     char *type = NULL;
-    if(S_ISREG(statbuf.st_mode) )    type = "regular file"; 
+    if(S_ISREG(statbuf.st_mode) )         type = "regular file"; 
     else if(S_ISDIR(statbuf.st_mode) )    type = "directory"; 
     else if(S_ISCHR(statbuf.st_mode) )    type = "character device"; 
     else if(S_ISBLK(statbuf.st_mode) )    type = "block device"; 
@@ -92,11 +101,16 @@ inline int stat_file(const char *filename)
     int gmode   = (statbuf.st_mode >> 3)& 0x00000007;
     int othmode = (statbuf.st_mode >> 0)& 0x00000007;
     
-    fprintf(stdout, "\nsize: %ld, blocks: %ld, inode: %ld, type: %s\nmode: %x%x%x%x, uid: %u, gid: %u\nAccess: %ld\nModify: %ld\nChange: %ld\n",
+    char atime[128], mtime[128], ctime[128];
+    format_timestamp(&statbuf.st_atime, atime);
+    format_timestamp(&statbuf.st_mtime, mtime);
+    format_timestamp(&statbuf.st_ctime, ctime);
+
+    fprintf(stdout, "\nsize: %ld, blocks: %ld, inode: %ld, type: %s\nmode: %x%x%x%x, uid: %u, gid: %u\nAccess: %s\nModify: %s\nChange: %s\n",
         statbuf.st_size, statbuf.st_blocks,
         statbuf.st_ino, type, sbit,omode, gmode, othmode,
         statbuf.st_uid, statbuf.st_gid,
-        statbuf.st_atimensec, statbuf.st_mtimensec, statbuf.st_ctimensec);
+        atime, mtime, ctime);
     return 0;
 }
 
@@ -233,6 +247,9 @@ int main(const int argc, const char ** argv)
                     break;
                 case IN_UNMOUNT :
                     remove_watch("NFS partition unmounted", event, watcher, watches);
+                    break;
+                case IN_Q_OVERFLOW :
+                    fprintf(stderr, "event queue overflow");
                     break;
                 /* Print the file contents since they changed. */
                 case IN_MODIFY :
