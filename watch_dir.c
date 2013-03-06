@@ -20,6 +20,8 @@
 #define IS_DIR_EVENT(mask)\
     (((mask >> 24) & 0xf0) != IN_ISDIR)
 
+#define DF_BUFLEN 128
+
 typedef struct _path_watcher {
     int wd;
     char *watchpath;
@@ -70,11 +72,13 @@ inline int print_file(const char *filename)
     return 0;
 }
 
-inline int format_timestamp(const time_t *timestamp, char *buf)
+inline int format_timestamp(const time_t *timestamp, const unsigned long *usec, const int buflen, char *buf)
 {
     struct tm *timedata; 
     timedata = localtime(timestamp);
-    strftime(buf, 128, "%F %T", timedata);
+    char datebuf[64];
+    strftime(datebuf, 64, "%F %T", timedata);
+    snprintf(buf, buflen, "%s.%lu", datebuf, *usec);
     return 0;
 }
 
@@ -100,16 +104,19 @@ inline int stat_file(const char *filename)
     int gmode   = (statbuf.st_mode >> 3)& 0x00000007;
     int othmode = (statbuf.st_mode >> 0)& 0x00000007;
     
-    char atime[128], mtime[128], ctime[128];
-    format_timestamp(&statbuf.st_atime, atime);
-    format_timestamp(&statbuf.st_mtime, mtime);
-    format_timestamp(&statbuf.st_ctime, ctime);
+    char atime[DF_BUFLEN], mtime[DF_BUFLEN], ctime[DF_BUFLEN];
+    format_timestamp(&statbuf.st_atime, &statbuf.st_atimensec, DF_BUFLEN, atime);
+    format_timestamp(&statbuf.st_mtime, &statbuf.st_mtimensec, DF_BUFLEN, mtime);
+    format_timestamp(&statbuf.st_ctime, &statbuf.st_ctimensec, DF_BUFLEN, ctime);
 
-    fprintf(stdout, "\nsize: %ld, blocks: %ld, inode: %ld, type: %s\nmode: %x%x%x%x, uid: %u, gid: %u\nAccess: %s\nModify: %s\nChange: %s\n",
-        statbuf.st_size, statbuf.st_blocks,
-        statbuf.st_ino, type, sbit,omode, gmode, othmode,
-        statbuf.st_uid, statbuf.st_gid,
+    fprintf(stdout, "\n==========BEGIN METADATA==========\n");
+    fprintf(stdout, "  File: '%s'\n  Size: %ld       Blocks: %ld       Inode: %ld       %s\n",
+        filename, statbuf.st_size, statbuf.st_blocks, statbuf.st_ino, type);
+    fprintf(stdout, "  Mode: %x%x%x%x     Uid: %u       Gid: %u\n", 
+        sbit,omode, gmode, othmode, statbuf.st_uid, statbuf.st_gid);
+    fprintf(stdout, "Access: %s\nModify: %s\nChange: %s\n",
         atime, mtime, ctime);
+    fprintf(stdout, "==========END METADATA============\n");
     return 0;
 }
 
