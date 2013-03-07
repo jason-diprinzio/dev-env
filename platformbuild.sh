@@ -1,10 +1,16 @@
 #!/bin/bash
 
-name=`grep "<name>Boomi Integration Platform</name>" pom.xml`
+. ~/bin/get_project.sh
 
+get_project
 if [ $? != 0 ]
 then
-    echo "Not a working copy of the platform project."
+    exit 127
+fi
+
+if [ "${project_name}" != "BoomiIntegrationPlatform" ]
+then
+    echo "Not a working copy of the platform"
     exit 127
 fi
 
