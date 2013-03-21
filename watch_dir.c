@@ -1,12 +1,17 @@
+#include <dirent.h>
 #include <errno.h>
+#include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
+
+#include <glib.h>
 
 #define EVENT_SIZE  (sizeof (struct inotify_event))
 #define BUF_LEN   (1024 * (EVENT_SIZE + 16))
@@ -22,19 +27,31 @@
 
 #define DF_BUFLEN 128
 
+static volatile unsigned char RUN_FLAG = 0;
+
 typedef struct _path_watcher {
     int wd;
     char *watchpath;
 } path_watcher;
 
-inline void remove_watch(const char *msg, const struct inotify_event *event, const int watcher, path_watcher *watches)
+void sig_handler(int sig)
 {
-    fprintf(stderr, "%s - removing notifications for file %s\n", msg, watches[event->wd].watchpath); \
-    inotify_rm_watch(watcher, watches[event->wd].wd); \
-    watches[event->wd].wd = 0; 
+
+#if _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _POSIX_SOURCE
+    sigset_t mask_set;
+    sigset_t old_set;
+#endif  
+    signal(sig, sig_handler);
+#if _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _POSIX_SOURCE
+    sigfillset(&mask_set);
+    sigprocmask(SIG_SETMASK, &mask_set, &old_set);
+#endif
+
+    fprintf(stderr, "stopping....\n");
+    RUN_FLAG = 0;
 }
 
-inline void timestamp()
+static inline void timestamp()
 {
     struct tm *timedata; 
     struct timeval tv;
@@ -46,14 +63,14 @@ inline void timestamp()
     fprintf(stdout, "\n[%s.%ld] ", datebuf, tv.tv_usec);
 }
 
-inline void watch_event(const char *msg, const char *filename, const path_watcher *watches, const struct inotify_event *event)
+static inline void watch_event(const char *msg, const char *filename, const path_watcher *watcher, const struct inotify_event *event)
 {
     timestamp();
     fprintf(stdout, "[wd=%d,mask=x%08x,cookie=%u,length=%d] ", event->wd, event->mask, event->cookie, event->len);
-    fprintf(stdout, "file [%s] in watched path [%s] event [%s]", filename, watches[event->wd].watchpath, msg);
+    fprintf(stdout, "file [%s] in watched path [%s] event [%s]", filename, watcher->watchpath, msg);
 }
 
-inline int print_file(const char *filename)
+static inline int print_file(const char *filename)
 {
     FILE *file = fopen(filename, "r");
     if(NULL == file) return errno;
@@ -61,6 +78,7 @@ inline int print_file(const char *filename)
     char fbuf[BUF_LEN], fmt[32];
     int bytes = 0;
 
+    /* TODO: add tail style option for outputting last N bytes. */
     fprintf(stdout, "\n==========BEGIN FILE CONTENTS==========\n");
     while( (bytes = fread(fbuf, sizeof(char), BUF_LEN, file)) != 0) {
         sprintf(fmt, "%%%d.%ds", bytes, bytes);
@@ -72,7 +90,7 @@ inline int print_file(const char *filename)
     return 0;
 }
 
-inline int format_timestamp(const time_t *timestamp, const unsigned long *usec, const int buflen, char *buf)
+static inline int format_timestamp(const time_t *timestamp, const unsigned long *usec, const int buflen, char *buf)
 {
     struct tm *timedata; 
     timedata = localtime(timestamp);
@@ -82,7 +100,7 @@ inline int format_timestamp(const time_t *timestamp, const unsigned long *usec, 
     return 0;
 }
 
-inline int stat_file(const char *filename)
+static inline int stat_file(const char *filename)
 {
     struct stat statbuf;
     if(stat(filename, &statbuf)) {
@@ -121,46 +139,125 @@ inline int stat_file(const char *filename)
 }
 
 #ifdef _DIR
-inline int is_dir(const char *path)
+static inline int is_dir(const char *path)
 {
     struct stat check_buf;
     if(stat(path, &check_buf)){
         perror("error stat");
-        return 0;
+        return errno;
     }
-    if(!S_ISDIR(check_buf.st_mode)) {
-        fprintf(stderr, "%s is not a directory\n", path);
+    if(S_ISDIR(check_buf.st_mode)) {
         return 0;
     }
     return 1;
 }
-#define IS_DIR(path) is_dir(path)
+
+static inline int check_is_dir(const char *path)
+{
+    if(is_dir(path)) {
+        fprintf(stderr, "%s is not a directory\n", path);
+        return 1;
+    } 
+    return 0;
+}
 #else
-#define IS_DIR(path) 1
+static inline int is_dir(const char *path)
+{
+    return 1;
+}
+
+static inline int check_is_dir(const char *path)
+{
+    return 0;
+}
 #endif
 
-inline int check_path(const char *path)
+static inline int check_path(const char *path)
 {
     int eval = 0;
     if((eval = access(path, R_OK))) {
-        perror("cannot watch file");
+        perror("cannot watch path");
         return eval;
     }
 
-    return !IS_DIR(path);
+    return check_is_dir(path);
 }
 
-int still_watching(const path_watcher *watches, const int count)
+static inline int new_path_watcher(path_watcher **watcher)
 {
-    for(int i=0; i<count; i++) {
-        if(watches[i].wd) return 1;
+    *watcher = (path_watcher *)malloc(sizeof (path_watcher));
+    memset(*watcher, 0, sizeof(path_watcher));
+    return watcher == NULL;
+}
+
+#define free_path_watcher(ref) \
+    free(ref); \
+    ref = 0;
+
+static void path_watcher_value_removed(gpointer data) 
+{
+    free_path_watcher(data);
+}
+
+static void path_watcher_key_removed(gpointer data)
+{
+    g_free(data);
+}
+
+static inline void remove_watch(const char *msg, GHashTable *watch_table, const struct inotify_event *event, const path_watcher *pw, const int watcher)
+{
+    fprintf(stderr, "%s - removing notifications for path: %s\n", msg, pw->watchpath);
+    g_hash_table_remove(watch_table, &(event->wd));
+    inotify_rm_watch(watcher, event->wd);
+}
+
+static inline int add_watch(GHashTable *watch_table, const char *filename, const int watcher)
+{
+    int watch_index = inotify_add_watch(watcher, filename, NOTIFY_FLAGS);
+    if(watch_index > 0) {
+        fprintf(stderr, "adding watch for path: %s\n", filename);
+        path_watcher *pw;
+        new_path_watcher(&pw);
+        pw->wd = watch_index;
+        pw->watchpath = g_strdup(filename);
+        gint *g_key = g_new(gint, 1);
+        *g_key = watch_index; 
+        g_hash_table_insert(watch_table, g_key, pw);
+        return watch_index;
+    } else {
+        fprintf(stderr, "cannot add watch for path: %s\n", filename);
     }
+    return 0; 
+}
+
+/* TODO: max depth arg */
+int recurse_dir(const char* dirname, const int watcher, GHashTable *watch_table)
+{
+    DIR *dir =0 ;
+    dir = opendir(dirname);
+    if(!dir){
+        return 1;
+    }   
+    struct dirent *entry = 0;
+    while( (entry = readdir(dir)) != NULL ) { 
+        char *prefix = entry->d_name;
+        if('.' == *prefix ) continue;
+
+        char fullname[entry->d_reclen + strlen(dirname) + 1 ];
+        sprintf(fullname, "%s/%s", dirname, entry->d_name);
+
+        if(is_dir(fullname)== 0) {
+            recurse_dir(fullname, watcher, watch_table);
+            /* TODO: Q these up to avoid notifications while we search for more directories. */
+            add_watch(watch_table, fullname, watcher); 
+        }
+    }   
+    closedir(dir);
     return 0;
 }
 
 int main(const int argc, const char ** argv)
 {
-
     int watcher = inotify_init();
 
     if(watcher < 0) {
@@ -168,27 +265,30 @@ int main(const int argc, const char ** argv)
         return 1;
     }
 
-    path_watcher watches[argc+1];
-    memset(watches, 0, sizeof(path_watcher));
+    GHashTable *watch_table;
+    watch_table = g_hash_table_new_full(g_int_hash, g_int_equal, 
+            path_watcher_key_removed, path_watcher_value_removed);
 
     if(1 < argc) {
         for(int i=1; i<argc; i++){
-            check_path(argv[i]);
-            int watch_index = inotify_add_watch(watcher, argv[i], NOTIFY_FLAGS);
-            if(watch_index > 0) {
-                watches[watch_index].wd = watch_index;
-                watches[watch_index].watchpath = (char*)argv[i];
-            }
+            if(!check_path(argv[i]))
+                add_watch(watch_table, argv[i], watcher); 
+
+            recurse_dir(argv[i], watcher, watch_table);
         }
     } else {
-        int watch_index = inotify_add_watch(watcher, ".", NOTIFY_FLAGS);
-        watches[1].wd = watch_index;
-        watches[1].watchpath = ".";
+        recurse_dir(".", watcher, watch_table);
+        add_watch(watch_table, ".", watcher); 
     }
 
     char buf[BUF_LEN];
 
-    while(still_watching(watches, argc+1)) {
+    int retval = 0;
+
+    RUN_FLAG = 1;
+    signal(SIGINT, &sig_handler);
+
+    while(g_hash_table_size(watch_table) && RUN_FLAG) {
         int len, i = 0;
         len = read(watcher, buf, BUF_LEN);
         if(len < 0) {
@@ -196,8 +296,9 @@ int main(const int argc, const char ** argv)
                 continue;
             }else {
                 perror("read error");
-                close(watcher);
-                return 2;
+                retval = errno;
+                RUN_FLAG = 0;
+                break;
             }
         } else if(!len) {
             fprintf(stderr, "no data from read\n");
@@ -208,70 +309,79 @@ int main(const int argc, const char ** argv)
             struct inotify_event *event;
 
             event = (struct inotify_event *) &buf[i];
+            path_watcher *pw = 0;
+            pw = g_hash_table_lookup(watch_table, &(event->wd));
 
-            char filename[1024];
-            if(event->len > 0) {
-                sprintf(filename, "%s/%s", watches[event->wd].watchpath, event->name);
-            } else {
-                sprintf(filename, "%s", watches[event->wd].watchpath);
-            }
-            switch(event->mask & 0x00FFFFFF) {
-                /* General events for directories and files. */
-                case IN_ACCESS :
-                    watch_event("accessed", filename, watches, event);
-                    break;
-                case IN_ATTRIB :
-                    watch_event("metadata modified", filename, watches, event);
-                    stat_file(filename);
-                    break;
-                case IN_OPEN :
-                    watch_event("opened", filename, watches, event);
-                    break;
-                case IN_CLOSE_WRITE :
-                    watch_event("closed for write", filename, watches, event);
-                    break;
-                case IN_CLOSE_NOWRITE :
-                    watch_event("close for read", filename, watches, event);
-                    break;
-                case IN_CREATE :
-                    watch_event("created", filename, watches, event);
-                    break;
-                case IN_DELETE :
-                    watch_event("removed", filename, watches, event);
-                    break;
-                case IN_MOVED_FROM:
-                case IN_MOVED_TO:
-                case IN_MOVE :
-                    watch_event("moved", filename, watches, event);
-                    break;
-                /* Cases where are watchers become invalid. */
-                case IN_DELETE_SELF :
-                    remove_watch("watched path was removed", event, watcher, watches);
-                    break;
-                case IN_MOVE_SELF :
-                    remove_watch("watched path was moved", event, watcher, watches);
-                    break;
-                case IN_UNMOUNT :
-                    remove_watch("NFS partition unmounted", event, watcher, watches);
-                    break;
-                case IN_Q_OVERFLOW :
-                    fprintf(stderr, "event queue overflow");
-                    break;
-                /* Print the file contents since they changed. */
-                case IN_MODIFY :
-                    watch_event("modified", filename, watches, event);
-                    if(IS_DIR_EVENT(event->mask)  ) {
-                        if(print_file(filename)) {
-                            fprintf(stderr, "cannot access %s...\n", filename);
+            if(pw) {
+                char filename[1024];
+                if(event->len > 0) {
+                    sprintf(filename, "%s/%s", pw->watchpath, event->name);
+                } else {
+                    sprintf(filename, "%s", pw->watchpath);
+                }
+                switch(event->mask & 0x00FFFFFF) {
+                    /* General events for directories and files. */
+                    case IN_ACCESS :
+                        watch_event("accessed", filename, pw, event);
+                        break;
+                    case IN_ATTRIB :
+                        watch_event("metadata modified", filename, pw, event);
+                        stat_file(filename);
+                        break;
+                    case IN_OPEN :
+                        watch_event("opened", filename, pw, event);
+                        break;
+                    case IN_CLOSE_WRITE :
+                        watch_event("closed for write", filename, pw, event);
+                        break;
+                    case IN_CLOSE_NOWRITE :
+                        watch_event("close for read", filename, pw, event);
+                        break;
+                    case IN_CREATE :
+                        watch_event("created", filename, pw, event);
+                        add_watch(watch_table, filename, watcher);
+                        break;
+                    case IN_DELETE :
+                        watch_event("removed", filename, pw, event);
+                        break;
+                    case IN_MOVED_FROM:
+                    case IN_MOVED_TO:
+                    case IN_MOVE :
+                        watch_event("moved", filename, pw, event);
+                        break;
+                    /* Cases where are watchers become invalid. */
+                    case IN_DELETE_SELF :
+                        remove_watch("watched path was removed", watch_table, event, pw, watcher);
+                        break;
+                    case IN_MOVE_SELF :
+                        remove_watch("watched path was moved", watch_table, event, pw, watcher);
+                        break;
+                    case IN_UNMOUNT :
+                        remove_watch("NFS partition unmounted", watch_table, event, pw, watcher);
+                        break;
+                    /* We're not fast enough. */
+                    case IN_Q_OVERFLOW :
+                        fprintf(stderr, "event queue overflow");
+                        break;
+                    /* Print the file contents since they changed. */
+                    case IN_MODIFY :
+                        watch_event("modified", filename, pw, event);
+                        if(IS_DIR_EVENT(event->mask)  ) {
+                            if(print_file(filename)) {
+                                fprintf(stderr, "cannot access %s...\n", filename);
+                            }
                         }
-                    }
-                    break;
+                        break;
+                }
             }
             i += EVENT_SIZE + event->len;
         }
     }
+
     fprintf(stderr, "quitting: no active watch descriptors\n");
     close(watcher);
-    return 0;
+    g_hash_table_destroy(watch_table); 
+
+    return retval;
 }
 
