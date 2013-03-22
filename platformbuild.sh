@@ -47,5 +47,6 @@ fi
 
 sudo -E ~/bin/deployplat $@
 
+sudo rm /var/lib/tomcat6/logs/*
 sudo /etc/init.d/tomcat6 restart
 
