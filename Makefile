@@ -15,10 +15,10 @@ $(GLIB_HEADER):
 required:	$(GLIB_HEADER)
 
 watchdir:	watch_dir.c
-	$(CC) $(CC_OPTS) -D_DIR -D_IN_FLAGS=IN_ONLYDIR\|IN_ALL_EVENTS $(GLIB_OPTS) -o $@ watch_dir.c 
+	$(CC) $(CC_OPTS) -D_DIR -D_IN_FLAGS=IN_ONLYDIR\|IN_ALL_EVENTS -o $@ watch_dir.c $(GLIB_OPTS)
 
 watchpath:	watch_dir.c
-	$(CC) $(CC_OPTS) $(GLIB_OPTS) -o $@ watch_dir.c
+	$(CC) $(CC_OPTS) -o $@ watch_dir.c $(GLIB_OPTS)
 
 chop:	chop.c
 	$(CC) $(CC_OPTS) -o chop chop.c
