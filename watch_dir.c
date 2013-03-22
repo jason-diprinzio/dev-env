@@ -33,7 +33,7 @@ typedef const int inotify_handle_t;
 
 typedef struct _path_watcher {
     int wd;
-    int watchpath_len;
+    unsigned int watchpath_len;
     char *watchpath;
 } path_watcher_t;
 
@@ -341,7 +341,7 @@ int main(const int argc, const char ** argv)
             pw = g_hash_table_lookup(watch_table, &(event->wd));
 
             if(pw) {
-                int flen = (event->len > 0 ? event->len : pw->watchpath_len); 
+                unsigned int flen = (event->len > 0 ? event->len : pw->watchpath_len); 
                 char filename[flen];
                 memset(filename, 0, sizeof(char)*flen);
 
