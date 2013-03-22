@@ -29,12 +29,15 @@
 
 static volatile unsigned char RUN_FLAG = 0;
 
+typedef const int inotify_handle_t;
+
 typedef struct _path_watcher {
     int wd;
+    int watchpath_len;
     char *watchpath;
-} path_watcher;
+} path_watcher_t;
 
-void sig_handler(int sig)
+static void sig_handler(int sig)
 {
 
 #if _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _POSIX_SOURCE
@@ -63,16 +66,23 @@ static inline void timestamp()
     fprintf(stdout, "\n[%s.%ld] ", datebuf, tv.tv_usec);
 }
 
-static inline void watch_event(const char *msg, const char *filename, const path_watcher *watcher, const struct inotify_event *event)
+static inline void watch_event(const char *msg, const char *filename, const path_watcher_t *watcher, const struct inotify_event *event)
 {
     timestamp();
     fprintf(stdout, "[wd=%d,mask=x%08x,cookie=%u,length=%d] ", event->wd, event->mask, event->cookie, event->len);
-    fprintf(stdout, "file [%s] in watched path [%s] event [%s]", filename, watcher->watchpath, msg);
+    fprintf(stdout, "path [%s] in watched path [%s] event [%s]", filename, watcher->watchpath, msg);
 }
 
-static inline int print_file(const char *filename)
+static inline int print_file(const char *filename, const path_watcher_t *watcher)
 {
-    FILE *file = fopen(filename, "r");
+    char fullpath[2048];
+    if(strcmp(watcher->watchpath, filename)) {
+        sprintf(fullpath, "%s/%s", watcher->watchpath, filename);
+    } else {
+        sprintf(fullpath, "%s", filename);
+    }
+
+    FILE *file = fopen(fullpath, "r");
     if(NULL == file) return errno;
 
     char fbuf[BUF_LEN], fmt[32];
@@ -100,10 +110,17 @@ static inline int format_timestamp(const time_t *timestamp, const unsigned long 
     return 0;
 }
 
-static inline int stat_file(const char *filename)
+static inline int stat_file(const char *filename, const path_watcher_t *watcher)
 {
+    char fullpath[2048];
+    if(strcmp(watcher->watchpath, filename)) {
+        sprintf(fullpath, "%s/%s", watcher->watchpath, filename);
+    } else {
+        sprintf(fullpath, "%s", filename);
+    }
+
     struct stat statbuf;
-    if(stat(filename, &statbuf)) {
+    if(stat(fullpath, &statbuf)) {
         perror("cannot stat file");
         return 1;
     }
@@ -183,20 +200,32 @@ static inline int check_path(const char *path)
     return check_is_dir(path);
 }
 
-static inline int new_path_watcher(path_watcher **watcher)
+static inline int new_path_watcher(path_watcher_t **watcher, const int wd, const char *filename)
 {
-    *watcher = (path_watcher *)malloc(sizeof (path_watcher));
-    memset(*watcher, 0, sizeof(path_watcher));
-    return watcher == NULL;
+    *watcher = (path_watcher_t *)malloc(sizeof (path_watcher_t));
+    memset(*watcher, 0, sizeof(path_watcher_t));
+
+    path_watcher_t *pw = *watcher;
+    pw->wd = wd;
+    pw->watchpath = g_strdup(filename);
+    pw->watchpath_len = strlen(pw->watchpath);
+
+    return *watcher == NULL;
 }
 
-#define free_path_watcher(ref) \
-    free(ref); \
-    ref = 0;
+#define FREE_PATH_WATCHER(ref) \
+    free_path_watcher((path_watcher_t*)ref); \
+    ref = 0
+
+static void free_path_watcher(path_watcher_t *watcher)
+{
+    g_free(watcher->watchpath);
+    free(watcher);
+}
 
 static void path_watcher_value_removed(gpointer data) 
 {
-    free_path_watcher(data);
+    FREE_PATH_WATCHER(data);
 }
 
 static void path_watcher_key_removed(gpointer data)
@@ -204,26 +233,25 @@ static void path_watcher_key_removed(gpointer data)
     g_free(data);
 }
 
-static inline void remove_watch(const char *msg, GHashTable *watch_table, const struct inotify_event *event, const path_watcher *pw, const int watcher)
+static inline void remove_watch(const char *msg, GHashTable *watch_table, const struct inotify_event *event, 
+        const path_watcher_t *watcher, inotify_handle_t in_handle)
 {
-    fprintf(stderr, "%s - removing notifications for path: %s\n", msg, pw->watchpath);
+    fprintf(stderr, "%s - removing notifications for path: %s\n", msg, watcher->watchpath);
     g_hash_table_remove(watch_table, &(event->wd));
-    inotify_rm_watch(watcher, event->wd);
+    inotify_rm_watch(in_handle, event->wd);
 }
 
-static inline int add_watch(GHashTable *watch_table, const char *filename, const int watcher)
+static inline int add_watch(GHashTable *watch_table, const char *filename, inotify_handle_t in_handle)
 {
-    int watch_index = inotify_add_watch(watcher, filename, NOTIFY_FLAGS);
-    if(watch_index > 0) {
+    int wd = inotify_add_watch(in_handle, filename, NOTIFY_FLAGS);
+    if(wd > 0) {
         fprintf(stderr, "adding watch for path: %s\n", filename);
-        path_watcher *pw;
-        new_path_watcher(&pw);
-        pw->wd = watch_index;
-        pw->watchpath = g_strdup(filename);
+        path_watcher_t *pw;
+        new_path_watcher(&pw, wd, filename);
         gint *g_key = g_new(gint, 1);
-        *g_key = watch_index; 
+        *g_key = wd; 
         g_hash_table_insert(watch_table, g_key, pw);
-        return watch_index;
+        return wd;
     } else {
         fprintf(stderr, "cannot add watch for path: %s\n", filename);
     }
@@ -231,7 +259,7 @@ static inline int add_watch(GHashTable *watch_table, const char *filename, const
 }
 
 /* TODO: max depth arg */
-int recurse_dir(const char* dirname, const int watcher, GHashTable *watch_table)
+int recurse_dir(const char* dirname, inotify_handle_t in_handle, GHashTable *watch_table)
 {
     DIR *dir =0 ;
     dir = opendir(dirname);
@@ -247,9 +275,9 @@ int recurse_dir(const char* dirname, const int watcher, GHashTable *watch_table)
         sprintf(fullname, "%s/%s", dirname, entry->d_name);
 
         if(is_dir(fullname)== 0) {
-            recurse_dir(fullname, watcher, watch_table);
+            recurse_dir(fullname, in_handle, watch_table);
             /* TODO: Q these up to avoid notifications while we search for more directories. */
-            add_watch(watch_table, fullname, watcher); 
+            add_watch(watch_table, fullname, in_handle); 
         }
     }   
     closedir(dir);
@@ -258,9 +286,9 @@ int recurse_dir(const char* dirname, const int watcher, GHashTable *watch_table)
 
 int main(const int argc, const char ** argv)
 {
-    int watcher = inotify_init();
+   inotify_handle_t  in_handle = inotify_init();
 
-    if(watcher < 0) {
+    if(in_handle < 0) {
         perror("Failed to initialize inotify");
         return 1;
     }
@@ -272,13 +300,13 @@ int main(const int argc, const char ** argv)
     if(1 < argc) {
         for(int i=1; i<argc; i++){
             if(!check_path(argv[i]))
-                add_watch(watch_table, argv[i], watcher); 
+                add_watch(watch_table, argv[i], in_handle); 
 
-            recurse_dir(argv[i], watcher, watch_table);
+            recurse_dir(argv[i], in_handle, watch_table);
         }
     } else {
-        recurse_dir(".", watcher, watch_table);
-        add_watch(watch_table, ".", watcher); 
+        recurse_dir(".", in_handle, watch_table);
+        add_watch(watch_table, ".", in_handle); 
     }
 
     char buf[BUF_LEN];
@@ -290,7 +318,7 @@ int main(const int argc, const char ** argv)
 
     while(g_hash_table_size(watch_table) && RUN_FLAG) {
         int len, i = 0;
-        len = read(watcher, buf, BUF_LEN);
+        len = read(in_handle, buf, BUF_LEN);
         if(len < 0) {
             if(errno == EINTR) {
                 continue;
@@ -309,15 +337,18 @@ int main(const int argc, const char ** argv)
             struct inotify_event *event;
 
             event = (struct inotify_event *) &buf[i];
-            path_watcher *pw = 0;
+            path_watcher_t *pw = 0;
             pw = g_hash_table_lookup(watch_table, &(event->wd));
 
             if(pw) {
-                char filename[1024];
+                int flen = (event->len > 0 ? event->len : pw->watchpath_len); 
+                char filename[flen];
+                memset(filename, 0, sizeof(char)*flen);
+
                 if(event->len > 0) {
-                    sprintf(filename, "%s/%s", pw->watchpath, event->name);
+                    strncpy(filename, event->name, flen);
                 } else {
-                    sprintf(filename, "%s", pw->watchpath);
+                    strncpy(filename, pw->watchpath, flen);
                 }
                 switch(event->mask & 0x00FFFFFF) {
                     /* General events for directories and files. */
@@ -326,7 +357,7 @@ int main(const int argc, const char ** argv)
                         break;
                     case IN_ATTRIB :
                         watch_event("metadata modified", filename, pw, event);
-                        stat_file(filename);
+                        stat_file(filename, pw);
                         break;
                     case IN_OPEN :
                         watch_event("opened", filename, pw, event);
@@ -339,7 +370,8 @@ int main(const int argc, const char ** argv)
                         break;
                     case IN_CREATE :
                         watch_event("created", filename, pw, event);
-                        add_watch(watch_table, filename, watcher);
+                        if(is_dir(filename) == 0)
+                            add_watch(watch_table, filename, in_handle);
                         break;
                     case IN_DELETE :
                         watch_event("removed", filename, pw, event);
@@ -351,13 +383,13 @@ int main(const int argc, const char ** argv)
                         break;
                     /* Cases where are watchers become invalid. */
                     case IN_DELETE_SELF :
-                        remove_watch("watched path was removed", watch_table, event, pw, watcher);
+                        remove_watch("watched path was removed", watch_table, event, pw, in_handle);
                         break;
                     case IN_MOVE_SELF :
-                        remove_watch("watched path was moved", watch_table, event, pw, watcher);
+                        remove_watch("watched path was moved", watch_table, event, pw, in_handle);
                         break;
                     case IN_UNMOUNT :
-                        remove_watch("NFS partition unmounted", watch_table, event, pw, watcher);
+                        remove_watch("NFS partition unmounted", watch_table, event, pw, in_handle);
                         break;
                     /* We're not fast enough. */
                     case IN_Q_OVERFLOW :
@@ -367,7 +399,7 @@ int main(const int argc, const char ** argv)
                     case IN_MODIFY :
                         watch_event("modified", filename, pw, event);
                         if(IS_DIR_EVENT(event->mask)  ) {
-                            if(print_file(filename)) {
+                            if(print_file(filename, pw)) {
                                 fprintf(stderr, "cannot access %s...\n", filename);
                             }
                         }
@@ -379,7 +411,7 @@ int main(const int argc, const char ** argv)
     }
 
     fprintf(stderr, "quitting: no active watch descriptors\n");
-    close(watcher);
+    close(in_handle);
     g_hash_table_destroy(watch_table); 
 
     return retval;
