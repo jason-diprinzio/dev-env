@@ -1,4 +1,9 @@
 #!/bin/bash
+if [ ! -f ./conf/container.properties ]
+then
+    echo "This is not an atom install directory."
+    exit 1
+fi
 
 START=0
 KEEP=0

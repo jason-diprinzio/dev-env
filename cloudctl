@@ -12,8 +12,14 @@ fi
 i=0
 while [ $i -lt $NODE_COUNT ]
 do 
-    ./bin/atom$i $op
+    if [ -f ./bin/atom$i ]
+    then
+        ./bin/atom$i $op
+        if [ $? -eq 0 ]
+        then
+            sleep 1
+        fi
+    fi
     i=$(($i+1));
-    sleep 1
 done
 
