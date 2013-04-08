@@ -23,6 +23,8 @@ then
     exit 1
 fi
 
+pkill -f gwt
+
 if [ "$1" == "--gwt" ]
 then
     ~/bin/fix-platform-build.pl co

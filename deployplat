@@ -4,7 +4,10 @@
 WORK_DIR=`pwd`
 echo Deploying platform from "${WORK_DIR}"
 
-CONTAINER_ROOT_DIR="/var/lib/tomcat6/webapps/ROOT"
+if [ -z $CONTAINER_ROOT_DIR ]
+then
+    CONTAINER_ROOT_DIR="/var/lib/tomcat6/webapps/ROOT"
+fi
 
 APP_DIR=`ls -d engine/target/*/ | grep platform-engine`
 DEPLOY_BASE="${WORK_DIR}"/"${APP_DIR}"
