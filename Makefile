@@ -13,6 +13,12 @@ LIB_WATCHER=libwatcher.so
 
 all:	required $(LIB_WATCHER) $(PROGRAMS)
 
+install:
+	./install.sh
+
+uninstall:
+	./uninstall.sh
+
 required:
 	@echo "checking for glib-2.0 libary"
 	@pkg-config --exists glib-2.0

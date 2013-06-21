@@ -5,6 +5,16 @@ then
     exit 1
 fi
 
+function usage() {
+    echo "usage: `basename $0` [--start|--keep|--cloud|--http|--proxy|--conn={connector}]"
+    exit 1
+}
+
+if [ -z $! ]
+then
+    usage
+fi
+
 . env.sh
 
 if [ -z "${ATOM_SRC_DIR}" ] ; then
@@ -46,8 +56,7 @@ while getopts ":h-:" opt; do
                     ;;
             esac;;
         h)
-            echo "usage: `basename $0` [--start|--keep|--cloud|--http|--proxy|--conn={connector}]"
-            exit 1
+            usage
             ;;
     esac
 done

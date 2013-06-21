@@ -43,6 +43,7 @@ conn_info=`echo ${SRC_CON_ZIP} | connector-info.pl`
 
 CON_VERSION=`echo ${conn_info} | awk '{print $1}'`
 DST_CON_TYPE=`echo ${conn_info} | awk '{print $2}'`
+CONN_FILE_NAME=connector-${DST_CON_TYPE}-${CON_VERSION}-car.zip
 
 #TODO verify
 result=$?
@@ -51,9 +52,10 @@ result=$?
 if [ "$2" == "--local-only" ]
 then
     #Install into a container
-    echo "Installing connector ${DST_CON_TYPE}" ${SRC_CON_ZIP} "to" connector/${DST_CON_TYPE}/connector-*.zip
+    echo "Installing connector ${DST_CON_TYPE}" ${SRC_CON_ZIP} "to" connector/${DST_CON_TYPE}/${CONN_FILE_NAME}
+
     mkdir -p connector/${DST_CON_TYPE}
-    cp ${SRC_CON_ZIP} connector/${DST_CON_TYPE}/connector-*.zip
+    cp ${SRC_CON_ZIP} connector/${DST_CON_TYPE}/${CONN_FILE_NAME}
 else
     CON_INSTALL_DIR=${PLATFORM_BASE_DIR}/connector/${DST_CON_TYPE} 
     mkdir -p ${CON_INSTALL_DIR}
@@ -62,7 +64,7 @@ else
     mkdir -p ${CON_UPDATE_DIR}
 
     #Install into platform
-    DEST_FILE=${CON_UPDATE_DIR}/connector-${DST_CON_TYPE}-${CON_VERSION}-car.zip
+    DEST_FILE=${CON_UPDATE_DIR}/${CONN_FILE_NAME}
 
     echo "Installing connector ${DST_CON_TYPE}" ${SRC_CON_ZIP} "to" ${DEST_FILE}
     cp ${SRC_CON_ZIP} ${DEST_FILE}
