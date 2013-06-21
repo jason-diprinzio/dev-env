@@ -8,5 +8,5 @@ then
 fi
 
 
-md5sum $1 | awk '{print $1}' | ~/bin/chop > $1.MD5
+md5sum $1 | awk '{print $1}' | chop > $1.MD5
 

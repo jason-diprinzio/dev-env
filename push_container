@@ -1,14 +1,13 @@
 #!/bin/bash
 
+. env.sh
+
 if [ $# -eq 0 ] ; then
     echo "Installs all the distribution files from a local container build to a local platform instance."
     echo 
     echo "Usage: `basename $0` [-c <container_dir>] [-u <update_dir>] <build_number>"
     exit 0
 fi
-
-CONTAINER_DIR="/home/jason/Projects/atom"
-UPDATE_DIR="/var/lib/tomcat6/updates"
 
 while [ $# -gt 1 ] ; do
 
@@ -18,12 +17,12 @@ while [ $# -gt 1 ] ; do
     case ${CL_ARG} in
 
         -c)
-            CONTAINER_DIR=$1
+            ATOM_SRC_DIR=$1
             shift
             ;;
 
         -u)
-            UPDATE_DIR=$1
+            PLATFORM_UPDATES_DIR=$1
             shift
             ;;
         *)
@@ -36,16 +35,16 @@ done
 
 BUILD_NUM=$1
 
-echo "Installing dists from ${CONTAINER_DIR} to ${UPDATE_DIR} with build number ${BUILD_NUM}"
+echo "Installing dists from ${ATOM_SRC_DIR} to ${PLATFORM_UPDATES_DIR} with build number ${BUILD_NUM}"
 
 install_dist()
 {
     DIST_SRC_PREFIX="$1"
     DIST_DST_PREFIX="$2"
 
-    UPDATE_FILE="${UPDATE_DIR}/${DIST_DST_PREFIX}-${BUILD_NUM}.zip"
-    cp ${CONTAINER_DIR}/${DIST_SRC_PREFIX}-dist-*.zip ${UPDATE_FILE}
-    ~/bin/md5file.sh "${UPDATE_FILE}"
+    UPDATE_FILE="${PLATFORM_UPDATES_DIR}/${DIST_DST_PREFIX}-${BUILD_NUM}.zip"
+    cp ${ATOM_SRC_DIR}/${DIST_SRC_PREFIX}-dist-*.zip ${UPDATE_FILE}
+    md5file.sh "${UPDATE_FILE}"
 }
 
 set -e
@@ -60,5 +59,5 @@ install_dist "shared-server/embedded-db-dist/target/container-embedded-db" "upda
 install_dist "shared-server/http-dist/target/container-shared-server-http" "update-shared-server-http"
 install_dist "shared-server/extended-security-dist/target/container-extended-security" "update-extended-security"
 
-~/bin/release_container.sh ${BUILD_NUM}
+release_container.sh ${BUILD_NUM}
 

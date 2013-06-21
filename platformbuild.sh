@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. ~/bin/get_project.sh
+. get_project.sh
 
 get_project
 if [ $? != 0 ]
@@ -27,7 +27,7 @@ pkill -f gwt
 
 if [ "$1" == "--gwt" ]
 then
-    ~/bin/fix-platform-build.pl co
+    fix-platform-build.pl co
     mvnopts="-DskipTests"
 fi
 
@@ -40,14 +40,14 @@ cmd="time mvn ${mvnopts} clean install"
 eval $cmd
 buildresult=$?
 
-~/bin/fix-platform-build.pl ci
+fix-platform-build.pl ci
 
 if [ $buildresult -ne 0 ]
 then
     exit 2
 fi
 
-sudo -E ~/bin/deployplat $@
+sudo -E deployplat $@
 
 sudo rm /var/lib/tomcat6/logs/*
 sudo /etc/init.d/tomcat6 restart

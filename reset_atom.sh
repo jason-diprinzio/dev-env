@@ -5,6 +5,12 @@ then
     exit 1
 fi
 
+. env.sh
+
+if [ -z "${ATOM_SRC_DIR}" ] ; then
+    echo "Please set ATOM_SRC_DIR in env.sh"
+fi
+
 START=0
 KEEP=0
 CLOUD=0
@@ -52,7 +58,7 @@ if [ ${START} -eq 1 ] ; then
     then
         bin/atom stop
     else
-        ~/bin/cloudctl stop
+        cloudctl stop
     fi
 fi
 
@@ -68,18 +74,17 @@ install_zip()
 
 install_extensions()
 {
-    if [ -z "${ATOM_EXT_DIR}" ]
+    if [ -n "${ATOM_EXT_DIR}" ]
     then
-        ATOM_EXT_DIR=/home/jason/Applications/atom-ext
+        ATOM_EXT_JARS_DIR=${ATOM_EXT_DIR}/jars
+        jars=`ls ${ATOM_EXT_JARS_DIR}/*.jar`
+        echo "Installing extension jars from ${ATOM_EXT_JARS_DIR}"
+        for jar in ${jars}
+        do
+            echo "Copying ${jar} to lib directory."
+            cp ${jar} lib
+        done
     fi
-    ATOM_EXT_JARS_DIR=${ATOM_EXT_DIR}/jars
-    jars=`ls ${ATOM_EXT_JARS_DIR}/*.jar`
-    echo "Installing extension jars from ${ATOM_EXT_JARS_DIR}"
-    for jar in ${jars}
-    do
-        echo "Copying ${jar} to lib directory."
-        cp ${jar} lib
-    done
 }
 
 rm -f bin/*.log
@@ -87,9 +92,6 @@ rm -f logs/*.log
 rm -rf work/*
 rm -rf tmp/*
 
-if [ -z "${ATOM_SRC_DIR}" ] ; then
-    ATOM_SRC_DIR="/home/jason/Projects/atom"
-fi
 
 if [ -d "${ATOM_SRC_DIR}" ] ; then
 
@@ -128,7 +130,7 @@ if [ -n "${CONNS}" ] ; then
     read -rd '' CONNS <<< "$CONNS"
     for CONN in $CONNS
     do
-        ~/bin/release_connector.sh  "${CONN}" --local-only
+        release_connector.sh  "${CONN}" --local-only
     done
 fi
 
@@ -137,7 +139,7 @@ if [ ${START} -eq 1 ] ; then
     then
         bin/atom start
     else
-        ~/bin/cloudctl start
+        cloudctl start
     fi
 fi
 

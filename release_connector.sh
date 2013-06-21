@@ -16,14 +16,18 @@ then
     exit 1
 fi
 
-if [ -z ${PLATFORM_BASE_DIR} ]
+. env.sh
+
+if [ -z "${PLATFORM_BASE_DIR}" ]
 then
-    PLATFORM_BASE_DIR=/var/lib/tomcat6
+    echo "Please set PLATFORM_BASE_DIR in env.sh"
+    exit 1
 fi
 
-if [ -z ${CON_SRC_DIR} ]
+if [ -z "${CON_SRC_DIR}" ]
 then
-    CON_SRC_DIR=/home/jason/Projects/connectors
+    echo "Please set CON_SRC_DIR in env.sh"
+    exit 1
 fi
 
 CON_TYPE=$1
@@ -35,7 +39,7 @@ if [ ! -f "${SRC_CON_ZIP}" ] ; then
     exit 1
 fi
 
-conn_info=`echo ${SRC_CON_ZIP} | ~/bin/connector-info.pl`
+conn_info=`echo ${SRC_CON_ZIP} | connector-info.pl`
 
 CON_VERSION=`echo ${conn_info} | awk '{print $1}'`
 DST_CON_TYPE=`echo ${conn_info} | awk '{print $2}'`
@@ -58,12 +62,12 @@ else
     mkdir -p ${CON_UPDATE_DIR}
 
     #Install into platform
-    DEST_FILE=${CON_INSTALL_DIR}/connector-${DST_CON_TYPE}-${CON_VERSION}-car.zip
+    DEST_FILE=${CON_UPDATE_DIR}/connector-${DST_CON_TYPE}-${CON_VERSION}-car.zip
 
     echo "Installing connector ${DST_CON_TYPE}" ${SRC_CON_ZIP} "to" ${DEST_FILE}
     cp ${SRC_CON_ZIP} ${DEST_FILE}
     echo "Creating MD5 digest for ${DEST_FILE}"
-    ~/bin/md5file.sh ${DEST_FILE}
+    md5file.sh ${DEST_FILE}
 
     cp ${DEST_FILE} ${CON_UPDATE_DIR}
     cp ${DEST_FILE}.MD5 ${CON_UPDATE_DIR}
