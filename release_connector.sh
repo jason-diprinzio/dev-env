@@ -20,12 +20,14 @@ fi
 
 if [ -z "${PLATFORM_BASE_DIR}" ]
 then
+    echo -n "error $0:"
     echo "Please set PLATFORM_BASE_DIR in env.sh"
     exit 1
 fi
 
 if [ -z "${CON_SRC_DIR}" ]
 then
+    echo -n "error $0:"
     echo "Please set CON_SRC_DIR in env.sh"
     exit 1
 fi

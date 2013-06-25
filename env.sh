@@ -15,3 +15,6 @@ export PLATFORM_UPDATES_DIR=/var/lib/tomcat6/updates
 # The base directory of the platform.
 export PLATFORM_BASE_DIR=/var/lib/tomcat6
 
+# The platorm application directory.
+export PLATFORM_DEPLOY_DIR=${PLATFORM_BASE_DIR}/webapps/ROOT
+

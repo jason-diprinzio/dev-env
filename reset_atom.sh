@@ -18,6 +18,7 @@ fi
 . env.sh
 
 if [ -z "${ATOM_SRC_DIR}" ] ; then
+    echo -n "error $0:"
     echo "Please set ATOM_SRC_DIR in env.sh"
 fi
 

@@ -1,15 +1,19 @@
 #!/bin/bash
 # Run this from the top level BOD project dir.
 
+. env.sh
+
 WORK_DIR=`pwd`
 echo Deploying platform from "${WORK_DIR}"
 
-if [ -z $CONTAINER_ROOT_DIR ]
+if [ -z $PLATFORM_DEPLOY_DIR ]
 then
-    CONTAINER_ROOT_DIR="/var/lib/tomcat6/webapps/ROOT"
+    echo -n "$0 error: "
+    echo "Please set PLATFORM_DEPLOY_DIR in env.sh"
+    exit 1
 fi
 
-APP_DIR=`ls -d engine/target/*/ | grep platform-engine`
+APP_DIR=`find gwt/ui/target -name platform-gwt-ui-* -type d`
 DEPLOY_BASE="${WORK_DIR}"/"${APP_DIR}"
 
 META_DIR="${DEPLOY_BASE}"META-INF
@@ -21,9 +25,9 @@ then
     RPCW_DIR="${WORK_DIR}"/gwt/ui/war/WidgetSphere
     MDM_DIR="${WORK_DIR}"/gwt/ui/war/MdmSphere
 else
-    RPC_DIR="${DEPLOY_BASE}"AtomSphere
-    RPCW_DIR="${DEPLOY_BASE}"WidgetSphere
-    MDM_DIR="${DEPLOY_BASE}"MdmSphere
+    RPC_DIR="${DEPLOY_BASE}/"AtomSphere
+    RPCW_DIR="${DEPLOY_BASE}/"WidgetSphere
+    MDM_DIR="${DEPLOY_BASE}/"MdmSphere
 fi
 
 DIRS=("${META_DIR}" "${WEB_DIR}" "${RPC_DIR}" "${RPCW_DIR}" "${MDM_DIR}")
@@ -31,8 +35,8 @@ DIRS=("${META_DIR}" "${WEB_DIR}" "${RPC_DIR}" "${RPCW_DIR}" "${MDM_DIR}")
 for DIR in ${DIRS[@]}
 do
     echo $DIR
-    rm -rf "${CONTAINER_ROOT_DIR}"/"`basename ${DIR}`"
-    ln -s -t "${CONTAINER_ROOT_DIR}" "${DIR}"
+    rm -rf "${PLATFORM_DEPLOY_DIR}"/"`basename ${DIR}`"
+    ln -s -t "${PLATFORM_DEPLOY_DIR}" "${DIR}"
     echo
 done
 

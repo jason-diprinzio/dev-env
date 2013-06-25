@@ -14,6 +14,18 @@ then
     exit 127
 fi
 
+. env.sh
+
+function revert() {
+    # this script should be idempotent
+    # so it won't matter if it's called
+    # unnecessarily
+    fix-platform-build.pl ci
+    exit 1
+}
+
+trap revert SIGHUP SIGINT SIGTERM
+
 echo "Enter root/sudo password."
 sudo echo 
 
@@ -22,8 +34,6 @@ then
     echo "Could not authenticate for sudo."
     exit 1
 fi
-
-pkill -f gwt
 
 if [ "$1" == "--gwt" ]
 then
@@ -47,8 +57,15 @@ then
     exit 2
 fi
 
-sudo -E deployplat $@
+sudo deployplat $@
 
-sudo rm /var/lib/tomcat6/logs/*
-sudo /etc/init.d/tomcat6 restart
+if [ $? -eq 0 ]
+then
+    sudo rm ${PLATFORM_BASE_DIR}/logs/*
+    # TODO make this configurable
+    if [ -f /etc/init.d/tomcat6 ]
+    then
+        sudo /etc/init.d/tomcat6 restart
+    fi
+fi
 
