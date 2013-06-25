@@ -10,7 +10,7 @@ function usage() {
     exit 1
 }
 
-if [ -z $# ]
+if [ $# -eq 0 ]
 then
     usage
 fi
