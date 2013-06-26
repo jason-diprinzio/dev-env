@@ -3,8 +3,10 @@
 . get_project.sh
 
 get_project
+
 if [ $? != 0 ]
 then
+    echo "Could not execute get_project script (get_project.sh)"
     exit 127
 fi
 
@@ -26,6 +28,41 @@ function revert() {
 
 trap revert SIGHUP SIGINT SIGTERM
 
+function usage() {
+    echo "`basename $0` [option]"
+    echo "  --gwt20  deploys build for GWT 2.0 using the older symlinking style for the webapp."
+    echo "  --dev    build only 1 user-agent and skip tests."
+    exit 1
+}
+
+DEPLOY_GWT_2_0=
+DEV_BUILD=0
+
+while getopts ":h-:" opt
+do
+    case "${opt}" in
+        -)
+            case "${OPTARG}" in
+                gwt20)
+                    DEPLOY_GWT_2_0=--gwt
+                    ;;
+                dev)
+                    DEV_BUILD=1
+                    ;;
+                help)
+                    usage
+                    ;;
+                *)
+                    echo "unknown option --${OPTARG}"
+                    usage
+                    ;;
+            esac;;
+        h)
+            usage
+            ;;
+    esac
+done
+
 echo "Enter root/sudo password."
 sudo echo 
 
@@ -35,7 +72,7 @@ then
     exit 1
 fi
 
-if [ "$1" == "--gwt" ]
+if [ ${DEV_BUILD} -eq 1 ]
 then
     fix-platform-build.pl co
     mvnopts="-DskipTests"
@@ -54,10 +91,10 @@ fix-platform-build.pl ci
 
 if [ $buildresult -ne 0 ]
 then
-    exit 2
+    exit $buildresult
 fi
 
-sudo deployplat $@
+sudo deployplat ${DEPLOY_GWT_2_0}
 
 if [ $? -eq 0 ]
 then

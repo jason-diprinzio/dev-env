@@ -5,7 +5,6 @@ use strict;
 my $bypass = "<!--mark--><set-property name=\"user.agent\" value=\"gecko1_8\"/><!--eom-->";
 
 # more gwt bullshit
-my $gwtpom = "gwt/pom.xml";
 my $asfile = "gwt/ui/src/main/java/com/boomi/gwt/AtomSphere.gwt.xml";
 my $wsfile = "gwt/ui/src/main/java/com/boomi/gwt/WidgetSphere.gwt.xml";
 my $mdmfile = "gwt/ui/src/main/java/com/boomi/gwt/MdmSphere.gwt.xml";
@@ -13,18 +12,12 @@ my $mdmfile = "gwt/ui/src/main/java/com/boomi/gwt/MdmSphere.gwt.xml";
 my $op = @ARGV[0];
 if($op eq "")
 {
-    print "Usage: prepare-scm.pl [ci|co] [--fix]\n";
+    print "Usage: prepare-scm.pl [ci|co] \n";
     exit 1;
 }
 
 my $chkin = "ci";
 my $chkout = "co";
-
-my $fixbuild = @ARGV[1];
-chomp($fixbuild);
-if( ($op eq $chkin) || ($fixbuild eq "--fix") ) {
-    fix_gwt_build($gwtpom);
-}
 
 fix_gwt_useragent($asfile);
 fix_gwt_useragent($wsfile);
@@ -39,27 +32,11 @@ sub fix_gwt_useragent
     {
         $lines =~ s/\n^$bypass$//m;
     } else {
-        $lines =~ s/(.*set-property.*name=\"user\.agent.*)/$1\n$bypass/;
+        # a little dirty, but avoid overdoing it.
+        if( $lines !~ /$bypass/m ) {
+            $lines =~ s/([\s]*<!--[\s]*<set-property.*name=\"user\.agent.*)/$1\n$bypass/;
+        }
     }
-    rewrite_file($file, $lines);
-}
-
-# unfuck ui build
-sub fix_gwt_build
-{
-    my $file = @_[0];
-    my $lines = get_file_contents($file);
-
-    if($op eq $chkout)
-    {
-        $lines =~ s/<module>ui<\/module>/<!--module>ui<\/module-->/; 
-    }
-
-    if($op eq $chkin)
-    {
-        $lines =~ s/<!--module>ui<\/module-->/<module>ui<\/module>/; 
-    }
-
     rewrite_file($file, $lines);
 }
 
