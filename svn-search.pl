@@ -41,7 +41,7 @@ $/ = $sep;
 while(<STDIN>) {
     my $line = $_;
     chomp($line);
-    if( $line =~ m/^\n(r[0-9]{5}).*$user.*\n\n$keyword/im ) {
+    if( $line =~ m/^\nr[0-9]{1,7}.*$user.*\n\n$keyword/im ) {
         $line =~ s/^\n//;
         $line =~ s/\n+/|/g;
         print( $line."\n" );
