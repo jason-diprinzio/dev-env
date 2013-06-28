@@ -16,6 +16,7 @@ release_connector.sh
 release_container.sh 
 reset_atom.sh        
 reset_logs.sh        
+svn-search.pl
 verifycert           
 watchdir             
 watchpath            
