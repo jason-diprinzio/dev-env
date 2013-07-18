@@ -16,8 +16,8 @@ fi
 APP_DIR=`find gwt/ui/target -name platform-gwt-ui-* -type d`
 DEPLOY_BASE="${WORK_DIR}"/"${APP_DIR}"
 
-META_DIR="${DEPLOY_BASE}"META-INF
-WEB_DIR="${DEPLOY_BASE}"WEB-INF
+META_DIR="${DEPLOY_BASE}"/META-INF
+WEB_DIR="${DEPLOY_BASE}"/WEB-INF
 
 if [ "$1" == "--gwt" ]
 then
