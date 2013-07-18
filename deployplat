@@ -2,9 +2,9 @@
 # Run this from the top level BOD project dir.
 
 . env.sh
+. build_args.sh
 
 WORK_DIR=`pwd`
-echo Deploying platform from "${WORK_DIR}"
 
 if [ -z $PLATFORM_DEPLOY_DIR ]
 then
@@ -13,25 +13,36 @@ then
     exit 1
 fi
 
-APP_DIR=`find gwt/ui/target -name platform-gwt-ui-* -type d`
-DEPLOY_BASE="${WORK_DIR}"/"${APP_DIR}"
+OLD_UI_DIR="${WORK_DIR}/"gwt/ui/war
+UI_DIR="${WORK_DIR}/"`find gwt/ui/target -name platform-gwt-ui-* -type d`
+ENG_DIR="${WORK_DIR}/"`find engine/target -name platform-engine-* -type d`
 
-META_DIR="${DEPLOY_BASE}"/META-INF
-WEB_DIR="${DEPLOY_BASE}"/WEB-INF
+META_DIR="${ENG_DIR}/"META-INF
+WEB_DIR="${ENG_DIR}/"WEB-INF
 
-if [ "$1" == "--gwt" ]
+if [ 1 -eq ${DEV_BUILD} ]
 then
-    RPC_DIR="${WORK_DIR}"/gwt/ui/war/AtomSphere
-    RPCW_DIR="${WORK_DIR}"/gwt/ui/war/WidgetSphere
-    MDM_DIR="${WORK_DIR}"/gwt/ui/war/MdmSphere
+    if [ 1 -eq ${DEPLOY_GWT_2_0} ]
+    then
+        RPC_DIR="${OLD_UI_DIR}/"AtomSphere
+        RPCW_DIR="${OLD_UI_DIR}/"WidgetSphere
+        MDM_DIR="${OLD_UI_DIR}/"MdmSphere
+    else
+        RPC_DIR="${UI_DIR}/"AtomSphere
+        RPCW_DIR="${UI_DIR}/"WidgetSphere
+        MDM_DIR="${UI_DIR}/"MdmSphere
+    fi
 else
-    RPC_DIR="${DEPLOY_BASE}/"AtomSphere
-    RPCW_DIR="${DEPLOY_BASE}/"WidgetSphere
-    MDM_DIR="${DEPLOY_BASE}/"MdmSphere
+    RPC_DIR="${ENG_DIR}/"AtomSphere
+    RPCW_DIR="${ENG_DIR}/"WidgetSphere
+    MDM_DIR="${ENG_DIR}/"MdmSphere
 fi
 
 DIRS=("${META_DIR}" "${WEB_DIR}" "${RPC_DIR}" "${RPCW_DIR}" "${MDM_DIR}")
 
+echo
+echo Deploying platform from "${WORK_DIR}"
+echo
 for DIR in ${DIRS[@]}
 do
     echo $DIR

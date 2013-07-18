@@ -17,6 +17,7 @@ then
 fi
 
 . env.sh
+. build_args.sh
 
 function revert() {
     # this script should be idempotent
@@ -28,41 +29,6 @@ function revert() {
 
 trap revert SIGHUP SIGINT SIGTERM
 
-function usage() {
-    echo "`basename $0` [option]"
-    echo "  --gwt20  deploys build for GWT 2.0 using the older symlinking style for the webapp."
-    echo "  --dev    build only 1 user-agent and skip tests."
-    exit 1
-}
-
-DEPLOY_GWT_2_0=
-DEV_BUILD=0
-
-while getopts ":h-:" opt
-do
-    case "${opt}" in
-        -)
-            case "${OPTARG}" in
-                gwt20)
-                    DEPLOY_GWT_2_0=--gwt
-                    ;;
-                dev)
-                    DEV_BUILD=1
-                    ;;
-                help)
-                    usage
-                    ;;
-                *)
-                    echo "unknown option --${OPTARG}"
-                    usage
-                    ;;
-            esac;;
-        h)
-            usage
-            ;;
-    esac
-done
-
 echo "Enter root/sudo password."
 sudo echo 
 
@@ -72,7 +38,7 @@ then
     exit 1
 fi
 
-if [ ${DEV_BUILD} -eq 1 ]
+if [ 1 -eq ${DEV_BUILD} ]
 then
     fix-platform-build.pl co
     mvnopts="-DskipTests"
@@ -94,7 +60,7 @@ then
     exit $buildresult
 fi
 
-sudo deployplat ${DEPLOY_GWT_2_0}
+sudo deployplat $@
 
 if [ $? -eq 0 ]
 then
