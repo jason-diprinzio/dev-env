@@ -6,7 +6,7 @@ get_project
 
 if [ $? != 0 ]
 then
-    echo "Could not execute get_project script (get_project.sh)"
+    echo "Could not get project name (get_project.sh)"
     exit 127
 fi
 

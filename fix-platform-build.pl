@@ -3,11 +3,22 @@
 use strict;
 
 my $bypass = "<!--mark--><set-property name=\"user.agent\" value=\"gecko1_8\"/><!--eom-->";
+my @files;
 
 # more gwt bullshit
 my $asfile = "gwt/ui/src/main/java/com/boomi/gwt/AtomSphere.gwt.xml";
+@files = check_file($asfile, @files);
+
 my $wsfile = "gwt/ui/src/main/java/com/boomi/gwt/WidgetSphere.gwt.xml";
+@files = check_file($wsfile, @files);
+
 my $mdmfile = "gwt/ui/src/main/java/com/boomi/gwt/MdmSphere.gwt.xml";
+@files = check_file($mdmfile, @files);
+
+my $length = @files;
+if(0 == $length) {
+    exit 1;
+}
 
 my $op = @ARGV[0];
 if($op eq "")
@@ -19,17 +30,18 @@ if($op eq "")
 my $chkin = "ci";
 my $chkout = "co";
 
-fix_gwt_useragent($asfile);
-fix_gwt_useragent($wsfile);
-fix_gwt_useragent($mdmfile);
+foreach my $file(@files) {
+    fix_gwt_useragent($file);
+}
+
+exit 0;
 
 sub fix_gwt_useragent
 {
     my $file = @_[0];
     my $lines = get_file_contents($file);
 
-    if($op eq $chkin)
-    {
+    if($op eq $chkin) {
         $lines =~ s/\n^$bypass$//m;
     } else {
         # a little dirty, but avoid overdoing it.
@@ -64,5 +76,17 @@ sub rewrite_file
     open(FILE, ">", $file) or die $!;
     print FILE "$lines";
     close(FILE);
+}
+
+sub check_file
+{
+    my ($file, @files) = @_;
+
+    if(-e $file) {
+        push(@files, $file);
+    } else {
+        printf "WARNING:  $file not found\n";
+    } 
+    return @files;
 }
 
