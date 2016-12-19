@@ -2,12 +2,13 @@
 
 . env.sh
 
-if [ $# -eq 0 ] ; then
+usage()
+{
     echo "Installs all the distribution files from a local container build to a local platform instance."
     echo 
-    echo "Usage: `basename $0` [-c <container_dir>] [-u <update_dir>] <build_number>"
-    exit 0
-fi
+    echo "Usage: `basename $0` [-c <container_dir>] [-u <update_dir>] "
+    exit 1
+}
 
 while [ $# -gt 1 ] ; do
 
@@ -25,6 +26,9 @@ while [ $# -gt 1 ] ; do
             PLATFORM_UPDATES_DIR=$1
             shift
             ;;
+        -h)
+            usage
+            ;;
         *)
             echo "Unknown argument ${CL_ARG}"
             exit 1
@@ -33,9 +37,19 @@ while [ $# -gt 1 ] ; do
     
 done
 
-BUILD_NUM=$1
+BUILD_NUM=$(get_atom_version)
 
 echo "Installing dists from ${ATOM_SRC_DIR} to ${PLATFORM_UPDATES_DIR} with build number ${BUILD_NUM}"
+
+
+echo -n "Continue? [y\\N] "
+read answer
+
+if [ "${answer}" != "y" ]
+then
+    echo "Aborting"
+    exit 127
+fi
 
 install_dist()
 {
@@ -58,6 +72,8 @@ install_dist "proxy/client-dist/target/container-proxy-client" "update-proxy-cli
 install_dist "shared-server/embedded-db-dist/target/container-embedded-db" "update-embedded-db"
 install_dist "shared-server/http-dist/target/container-shared-server-http" "update-shared-server-http"
 install_dist "shared-server/extended-security-dist/target/container-extended-security" "update-extended-security"
+install_dist "shared-server/mllp-dist/target/container-shared-server-mllp" "update-shared-server-mllp"
+install_dist "shared-server/queue-dist/target/container-shared-server-queue" "update-shared-server-queue"
 
 release_container.sh ${BUILD_NUM}
 

@@ -9,7 +9,9 @@ deployplat
 env.sh
 fix-platform-build.pl
 fix-screens          
+get_atom_version
 get_project.sh       
+mc5
 md5file.sh           
 platformbuild.sh     
 push_container       

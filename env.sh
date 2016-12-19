@@ -10,10 +10,10 @@ export ATOM_SRC_DIR=/home/jason/Projects/atom
 export CON_SRC_DIR=/home/jason/Projects/connectors
 
 # The updates directory for the platform.
-export PLATFORM_UPDATES_DIR=/var/lib/tomcat6/updates
+export PLATFORM_UPDATES_DIR=/usr/local/boomi/boomi-base/updates
 
 # The base directory of the platform.
-export PLATFORM_BASE_DIR=/var/lib/tomcat6
+export PLATFORM_BASE_DIR=/usr/local/boomi/jetty-base
 
 # The platorm application directory.
 export PLATFORM_DEPLOY_DIR=${PLATFORM_BASE_DIR}/webapps/ROOT

@@ -1,9 +1,4 @@
 #!/bin/bash
-if [ ! -f ./conf/container.properties ]
-then
-    echo "This is not an atom install directory."
-    exit 1
-fi
 
 function usage() {
     echo "usage: `basename $0` [--start|--keep|--cloud|--http|--proxy|--conn={connector}]"
@@ -16,11 +11,6 @@ then
 fi
 
 . env.sh
-
-if [ -z "${ATOM_SRC_DIR}" ] ; then
-    echo -n "error $0:"
-    echo "Please set ATOM_SRC_DIR in env.sh"
-fi
 
 START=0
 KEEP=0
@@ -51,6 +41,9 @@ while getopts ":h-:" opt; do
                 conn=*)
                     CONNS="${CONNS} ${OPTARG#*=}"
                     ;;
+                help)
+                    usage
+                    ;;
                 *)
                     echo "unknown option --${OPTARG}"
                     exit 1
@@ -61,6 +54,12 @@ while getopts ":h-:" opt; do
             ;;
     esac
 done
+
+if [ -z "${ATOM_SRC_DIR}" ] ; then
+    echo -n "error $0:"
+    echo "Please set ATOM_SRC_DIR in env.sh"
+fi
+
 
 # ensure that all atoms are stopped!
 if [ ${START} -eq 1 ] ; then
@@ -114,6 +113,8 @@ if [ -d "${ATOM_SRC_DIR}" ] ; then
         install_zip "groovy" ${ATOM_SRC_DIR}/shared-server/groovy-dist/target/container-groovy-dist-*.zip
         install_zip "embeddb" ${ATOM_SRC_DIR}/shared-server/embedded-db-dist/target/container-embedded-db-dist-*.zip
         install_zip "extsec" ${ATOM_SRC_DIR}/shared-server/extended-security-dist/target/container-extended-security-dist-*.zip
+        install_zip "mllp" ${ATOM_SRC_DIR}/shared-server/mllp-dist/target/container-shared-servermllp-dist-*.zip
+        install_zip "queue" ${ATOM_SRC_DIR}/shared-server/queue-dist/target/container-shared-server-queue-dist-*.zip 
         install_extensions
     fi
 
