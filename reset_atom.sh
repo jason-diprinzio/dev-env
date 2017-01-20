@@ -86,13 +86,18 @@ install_extensions()
     if [ -n "${ATOM_EXT_DIR}" ]
     then
         ATOM_EXT_JARS_DIR=${ATOM_EXT_DIR}/jars
-        jars=`ls ${ATOM_EXT_JARS_DIR}/*.jar`
-        echo "Installing extension jars from ${ATOM_EXT_JARS_DIR}"
-        for jar in ${jars}
-        do
-            echo "Copying ${jar} to lib directory."
-            cp ${jar} lib
-        done
+        jars=`ls ${ATOM_EXT_JARS_DIR}/*.jar 2>/dev/null`
+        if [ $? -eq 0 ]
+        then
+            echo "Installing extension jars from ${ATOM_EXT_JARS_DIR}"
+            for jar in ${jars}
+            do
+                echo "Copying ${jar} to lib directory."
+                cp ${jar} lib
+            done
+        else
+            echo "No ext jars to install"
+        fi
     fi
 }
 
@@ -113,7 +118,7 @@ if [ -d "${ATOM_SRC_DIR}" ] ; then
         install_zip "groovy" ${ATOM_SRC_DIR}/shared-server/groovy-dist/target/container-groovy-dist-*.zip
         install_zip "embeddb" ${ATOM_SRC_DIR}/shared-server/embedded-db-dist/target/container-embedded-db-dist-*.zip
         install_zip "extsec" ${ATOM_SRC_DIR}/shared-server/extended-security-dist/target/container-extended-security-dist-*.zip
-        install_zip "mllp" ${ATOM_SRC_DIR}/shared-server/mllp-dist/target/container-shared-servermllp-dist-*.zip
+        install_zip "mllp" ${ATOM_SRC_DIR}/shared-server/mllp-dist/target/container-shared-server-mllp-dist-*.zip
         install_zip "queue" ${ATOM_SRC_DIR}/shared-server/queue-dist/target/container-shared-server-queue-dist-*.zip 
         install_extensions
     fi
