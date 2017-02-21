@@ -1,11 +1,14 @@
 CC=gcc
-CC_OPTS=-Wall -O2 -std=c99 -fomit-frame-pointer -I./
+CPP=g++
+OPTS=-Wall -Wextra -O2 -fomit-frame-pointer -I./
+CC_OPTS+=-std=c99 
+CPP_OPTS+=-std=gnu++11
 LIB_OPTS=-shared -fPIC
 
 # I hear autoconf a knocking
 GLIB_OPTS=$(shell pkg-config --cflags --libs glib-2.0)
 
-PROGRAMS=chop watchdir watchpath
+PROGRAMS=chop watchdir watchpath pwcli
 WATCHER_OBJ=watcher.o
 HEADERS=watcher.h
 OBJS=$(WATCHER_OBJ)
@@ -34,6 +37,9 @@ watchdir:	$(OBJS) watch_dir.c
 
 watchpath:	$(OBJS) watch_dir.c
 	$(CC) $(CC_OPTS) -o $@ $(WATCHER_OBJ) watch_dir.c $(GLIB_OPTS)
+
+pwcli:	pw_mgmt.cpp
+	$(CPP) $(CPP_OPTS) -o $@ pw_mgmt.cpp
 
 chop:	chop.c
 	$(CC) $(CC_OPTS) -o chop chop.c
