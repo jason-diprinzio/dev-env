@@ -16,6 +16,7 @@ mc5
 md5file.sh           
 platformbuild.sh     
 push_container       
+pwcli
 release_connector.sh 
 release_container.sh 
 reset_atom.sh        

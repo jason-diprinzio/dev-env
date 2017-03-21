@@ -9,6 +9,9 @@ my @files;
 my $asfile = "gwt/ui/src/main/java/com/boomi/gwt/AtomSphere.gwt.xml";
 @files = check_file($asfile, @files);
 
+my $apfile = "gwt/ui/src/main/java/com/boomi/gwt/ApiSphere.gwt.xml";
+@files = check_file($apfile, @files);
+
 my $wsfile = "gwt/ui/src/main/java/com/boomi/gwt/WidgetSphere.gwt.xml";
 @files = check_file($wsfile, @files);
 
@@ -46,7 +49,7 @@ sub fix_gwt_useragent
     } else {
         # a little dirty, but avoid overdoing it.
         if( $lines !~ /$bypass/m ) {
-            $lines =~ s/([\s]*<!--[\s]*<set-property.*name=\"user\.agent.*)/$1\n$bypass/;
+            $lines =~ s/(.*set-property.*name=\"user\.agent\".*value=\"gecko1_8\".*)/$1\n$bypass/;
         }
     }
     rewrite_file($file, $lines);

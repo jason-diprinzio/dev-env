@@ -12,7 +12,7 @@ my $conn_name = $tokens[$last_token-1];
 @tokens = split('-', $conn_name);
 $last_token = @tokens;
 
-print($tokens[$last_token-2]);
+print($tokens[2]);
 print(" ");
 print($tokens[1]);
 
