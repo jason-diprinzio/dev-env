@@ -14,6 +14,7 @@ while [ $i -lt $NODE_COUNT ]
 do 
     if [ -f ./bin/atom$i ]
     then
+        export ATOM_LOCALHOSTID=node-$i
         ./bin/atom$i $op
         if [ $? -eq 0 ]
         then
@@ -22,4 +23,6 @@ do
     fi
     i=$(($i+1));
 done
+
+unset ATOM_LOCALHOSTID
 

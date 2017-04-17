@@ -7,6 +7,7 @@ create_account.sh
 delete_account.sh    
 deployplat           
 env.sh
+exception.java.sh
 find-ssh-agent.sh
 fix-platform-build.pl
 fix-screens          
@@ -22,6 +23,7 @@ release_container.sh
 reset_atom.sh        
 reset_logs.sh        
 svn-search.pl
+unit.java.sh
 verifycert           
 watchdir             
 watchpath            
