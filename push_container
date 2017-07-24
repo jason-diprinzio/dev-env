@@ -6,7 +6,7 @@ usage()
 {
     echo "Installs all the distribution files from a local container build to a local platform instance."
     echo 
-    echo "Usage: `basename $0` [-c <container_dir>] [-u <update_dir>] "
+    echo "Usage: `basename $0` [-c <container_dir>] [-u <update_dir>] -a <container_id>"
     exit 1
 }
 
@@ -26,6 +26,10 @@ while [ $# -gt 1 ] ; do
             PLATFORM_UPDATES_DIR=$1
             shift
             ;;
+        -a)
+            CONTAINER_ID=$1
+            shift
+            ;;
         -h)
             usage
             ;;
@@ -36,6 +40,11 @@ while [ $# -gt 1 ] ; do
     esac
     
 done
+
+if [ -z "${CONTAINER_ID}" ]
+then
+    echo "must specify a container id"
+fi
 
 BUILD_NUM=$(get_atom_version)
 
@@ -75,5 +84,5 @@ install_dist "shared-server/extended-security-dist/target/container-extended-sec
 install_dist "shared-server/mllp-dist/target/container-shared-server-mllp" "update-shared-server-mllp"
 install_dist "shared-server/queue-dist/target/container-shared-server-queue" "update-shared-server-queue"
 
-release_container.sh ${BUILD_NUM}
+release_container.sh ${CONTAINER_ID}
 
