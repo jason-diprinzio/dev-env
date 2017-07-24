@@ -7,6 +7,8 @@ if [ -n "$agentsock" ]
 then
     if [ -n "$agentpid" ]
     then
+        unset SSH_AUTH_SOCK
+        unset SSH_AGENT_PID
         export SSH_AUTH_SOCK=$agentsock
         export SSH_AGENT_PID=$agentpid
     else
