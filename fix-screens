@@ -1,6 +1,6 @@
 #!/bin/bash
 
-xrandr --output DVI-I-1 --pos 0x500 --mode 2560x1440
+xrandr --output DP2 --pos 0x500 --mode 2560x1440
 xrandr --output HDMI1 --pos 2560x0 --rotate left
 xrandr --output eDP1 --pos 4000x1480 --primary
 
