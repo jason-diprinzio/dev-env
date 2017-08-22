@@ -120,6 +120,7 @@ if [ -d "${ATOM_SRC_DIR}" ] ; then
         install_zip "extsec" ${ATOM_SRC_DIR}/shared-server/extended-security-dist/target/container-extended-security-dist-*.zip
         install_zip "mllp" ${ATOM_SRC_DIR}/shared-server/mllp-dist/target/container-shared-server-mllp-dist-*.zip
         install_zip "queue" ${ATOM_SRC_DIR}/shared-server/queue-dist/target/container-shared-server-queue-dist-*.zip 
+        install_zip "tradingpartner" ${ATOM_SRC_DIR}/tradingpartner-dist/target/container-tradingpartner-dist-*.zip
         install_extensions
     fi
 
