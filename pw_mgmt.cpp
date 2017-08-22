@@ -39,7 +39,16 @@ static void load_pws(pw_container& pw_map)
     }
 }
 
-static pw_val gen_pass(pw_container& pws, const pw_key& key, const uint8_t pw_len = PW_LEN)
+static void write_key(pw_container& pws)
+{
+    std::ofstream of(get_path(), std::ios::out);
+    for(auto e : pws) {
+        of << e.first << " " << e.second << std::endl;
+    }
+    of.flush();
+}
+
+static pw_val gen_pass(const uint8_t pw_len = PW_LEN)
 {
     std::ifstream fs("/dev/random", std::ios::in);
 
@@ -58,13 +67,6 @@ static pw_val gen_pass(pw_container& pws, const pw_key& key, const uint8_t pw_le
     }
 
     const pw_val pw = out.str();
-    pws[key] = pw;
-
-    std::ofstream of(get_path(), std::ios::out);
-    for(auto e : pws) {
-        of << e.first << " " << e.second << std::endl;
-    }
-    of.flush();
 
     return pw;
 }
@@ -103,8 +105,10 @@ int main(const int argc, const char **argv)
         if(get) {
             std::cout << pws.at(key);
         } else if(gen) {
-            const pw_val pw = gen_pass(pws, key, pw_len);
-            std::cout << pw;
+            const pw_val pw = gen_pass(pw_len);
+            pws[key] = pw;
+            write_key(pws);
+            std::cout << pw << std::endl;
         } else {
             throw std::runtime_error("wtf dude?!?!");
         }
