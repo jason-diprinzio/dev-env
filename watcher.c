@@ -30,7 +30,7 @@ int new_watch_args(watch_args_t ** newwargs, const int numpaths, const int optio
     wargs->numpaths = numpaths;
     wargs->options = options;
     wargs->watch_flags = watch_flags;
-    wargs->paths = malloc(sizeof(char) * numpaths);
+    wargs->paths = (char**)malloc(sizeof(char) * numpaths);
     if(!(wargs->paths)) {
         free(wargs);
         return 1;
@@ -38,7 +38,7 @@ int new_watch_args(watch_args_t ** newwargs, const int numpaths, const int optio
 
     for(int i=0; i<numpaths; i++) {
         const char *tmp = paths[i];
-        wargs->paths[i] = malloc(sizeof(char) * strlen(tmp) + 1);
+        wargs->paths[i] = (char*)malloc(sizeof(char) * strlen(tmp) + 1);
         strncpy(wargs->paths[i], tmp, strlen(tmp));
     }
 
@@ -238,7 +238,7 @@ int watch(const watch_args_t *wargs)
 
             event = (struct inotify_event *) &buf[i];
             path_watcher_t *pw = 0;
-            pw = g_hash_table_lookup(watch_table, &(event->wd));
+            pw = (path_watcher_t*)g_hash_table_lookup(watch_table, &(event->wd));
 
             if(pw) {
                 unsigned int flen = 255;

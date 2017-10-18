@@ -114,12 +114,12 @@ static inline int stat_file(const char *filename, const path_watcher_t *watcher)
     }
 
     char *type = NULL;
-    if(S_ISREG(statbuf.st_mode) )         type = "regular file"; 
-    else if(S_ISDIR(statbuf.st_mode) )    type = "directory"; 
-    else if(S_ISCHR(statbuf.st_mode) )    type = "character device"; 
-    else if(S_ISBLK(statbuf.st_mode) )    type = "block device"; 
-    else if(S_ISFIFO(statbuf.st_mode))    type = "pipe"; 
-    else if(S_ISLNK(statbuf.st_mode) )    type = "symbolic link"; 
+    if(S_ISREG(statbuf.st_mode) )         type = (char*)"regular file"; 
+    else if(S_ISDIR(statbuf.st_mode) )    type = (char*)"directory"; 
+    else if(S_ISCHR(statbuf.st_mode) )    type = (char*)"character device"; 
+    else if(S_ISBLK(statbuf.st_mode) )    type = (char*)"block device"; 
+    else if(S_ISFIFO(statbuf.st_mode))    type = (char*)"pipe"; 
+    else if(S_ISLNK(statbuf.st_mode) )    type = (char*)"symbolic link"; 
     //else if(S_ISSOCK(statbuf.st_mode))    type = "socket"; 
 
     int sbit    = (statbuf.st_mode >> 9)& 0x00000007;
