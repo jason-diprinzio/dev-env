@@ -38,19 +38,28 @@ then
     exit 1
 fi
 
+mvnopts+="-DskipTests -Pgwt-dev "
+
 if [ 1 -eq ${DEV_BUILD} ]
 then
     fix-platform-build.pl co
-    mvnopts="-DskipTests"
 fi
 
 rm -rf gwt/ui/war/WEB-INF/classes
 rm -rf gwt/ui/war/WEB-INF/lib
 rm -rf gwt/ui/war/AtomSphere
 
-cmd="time mvn ${mvnopts} clean install"
+mvn ${mvnopts} -pl model,common,gwt/model clean install
+buildresult=$?
 
-eval $cmd
+if [ $buildresult -ne 0 ]
+then
+    fix-platform-build.pl ci
+    exit $buildresult
+fi
+
+# shit sandwich time...eat up
+mvn ${mvnopts} -rf gwt/ui clean install
 buildresult=$?
 
 fix-platform-build.pl ci
@@ -64,11 +73,10 @@ sudo deployplat $@
 
 if [ $? -eq 0 ]
 then
-    sudo rm ${PLATFORM_BASE_DIR}/logs/*
-    # TODO make this configurable
-    if [ -f /etc/init.d/tomcat6 ]
-    then
-        sudo /etc/init.d/tomcat6 restart
-    fi
+    sudo ~/Projects/scripts/jty.sh stop
+    sudo rm /var/log/boomi/jetty/*.log
+    sudo rm /var/log/boomi/jetty/app/*
+    sudo rm /var/log/boomi/jetty/request/*
+    sudo ~/Projects/scripts/jty.sh start
 fi
 
