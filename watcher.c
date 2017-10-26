@@ -202,7 +202,7 @@ int watch(const watch_args_t *wargs)
     inotify_handle_t  in_handle = inotify_init();
 
     if(in_handle < 0) {
-        perror("Failed to initialize inotify");
+        perror("failed to initialize inotify");
         return 1;
     }
 
