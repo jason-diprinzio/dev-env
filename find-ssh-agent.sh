@@ -1,6 +1,6 @@
 #!/bin/bash
 
-agentsock=`find /tmp -name agent.* 2>/dev/null | xargs ls -ltr | awk '{print $9}'`
+agentsock=`find /tmp -name 'agent.*' 2>/dev/null | xargs ls -ltr | awk '{print $9}'`
 agentpid=`pgrep -fl ssh-agent | awk '{print $1}'`
 
 if [ -n "$agentsock" ]

@@ -48,7 +48,12 @@ DST_CON_TYPE=`echo "${conn_info}" | awk '{print $2}'`
 CONN_FILE_NAME=connector-"${DST_CON_TYPE}-${CON_VERSION}"-car.zip
 
 #TODO verify
-result=$?
+if [ $? != 0 ]
+then
+    echo "cannot find zipped car file"
+    exit 2
+fi
+
 
 #Decide where to install
 if [ "$2" == "--local-only" ]

@@ -71,6 +71,8 @@ fi
 
 sudo deployplat $@
 
+./liquibutil.sh update
+
 if [ $? -eq 0 ]
 then
     sudo ~/Projects/scripts/jty.sh stop

@@ -6,6 +6,8 @@
 #include <map>
 
 #include <unistd.h>
+#include <stdlib.h>
+#include <pwd.h>
 
 #include <boost/algorithm/string.hpp>
 
@@ -16,10 +18,21 @@ using pw_key = std::string;
 using pw_val = std::string;
 using pw_container = std::map<pw_key, pw_val>;
 
+static std::string get_user_name()
+{
+  uid_t uid = geteuid();
+  struct passwd *pw = getpwuid(uid);
+  if (pw)
+  {
+      return pw->pw_name;
+    }
+
+  return "";
+}
 static std::string get_path()
 {
     std::ostringstream path;
-    path << "/home/" << getlogin() << "/.pwdb";
+    path << "/home/" << get_user_name() << "/.pwdb";
     return path.str();
 }
 
@@ -35,6 +48,8 @@ static void load_pws(pw_container& pw_map)
         boost::split(tokens, s, boost::is_any_of(" "), boost::token_compress_on);
         if(tokens.size() == 2) {
             pw_map[tokens[0]] = tokens[1];
+        } else {
+            throw std::runtime_error("bad entry in password file");
         }
     }
 }
