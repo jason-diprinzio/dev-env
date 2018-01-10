@@ -118,7 +118,7 @@ int main(const int argc, const char **argv)
         }
 
         if(get) {
-            std::cout << pws.at(key);
+            std::cout << pws.at(key) << std::endl;
         } else if(gen) {
             const pw_val pw = gen_pass(pw_len);
             pws[key] = pw;
