@@ -75,10 +75,10 @@ sudo deployplat $@
 
 if [ $? -eq 0 ]
 then
-    sudo ~/Projects/scripts/jty.sh stop
+    sudo service jetty stop
     sudo rm /var/log/boomi/jetty/*.log
     sudo rm /var/log/boomi/jetty/app/*
     sudo rm /var/log/boomi/jetty/request/*
-    sudo ~/Projects/scripts/jty.sh start
+    sudo service jetty start
 fi
 

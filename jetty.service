@@ -13,7 +13,7 @@ Environment=JETTY_LOGS=/var/log/boomi/jetty
 Environment=JETTY_HOME=/opt/jetty/latest
 Environment=JETTY_RUN=/var/run
 #Environment="JETTY_ARGS=jetty.state=/usr/local/boomi/jetty-base/jetty.state"
-Environment="JAVA_OPTIONS=-Xbootclasspath/p:/usr/lib/jvm/java-7-oracle/lib/tools.jar -Xmx1024m -XX:PermSize=256M -XX:MaxPermSize=512M -Djava.endorsed.dirs=endorsed -Djava.util.logging.config.file=/usr/local/boomi/jetty-base/resources/logging.properties"
+Environment="JAVA_OPTIONS=-Xbootclasspath/p:/usr/lib/jvm/java-7-oracle/lib/tools.jar -Xmx1024m -XX:PermSize=256M -XX:MaxPermSize=512M -DterracottaServers=localhost:9510 -Djava.endorsed.dirs=endorsed -Djava.util.logging.config.file=/usr/local/boomi/jetty-base/resources/logging.properties"
 
 ExecStart=/opt/jetty/latest/bin/jetty.sh start
 ExecStop=/opt/jetty/latest/bin/jetty.sh stop
