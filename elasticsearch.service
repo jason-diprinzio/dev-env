@@ -7,11 +7,11 @@ Type=forking
 User=root
 
 ExecStart=/home/jason/Applications/elasticsearch-1.4.2/bin/elasticsearch -d
-ExecStop=echo "script sucks"
+ExecStop=/usr/bin/pkill -f eleasticsearch
 
 StandardOutput=syslog
 StandardError=syslog
-SyslogIdentifier=/usr/bin/pkill -f eleasticsearch
+SyslogIdentifier=elasticsearch
 
 [Install]
 WantedBy=multi-user.target
