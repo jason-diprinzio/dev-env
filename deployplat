@@ -22,8 +22,8 @@ then
 fi
 
 OLD_UI_DIR="${WORK_DIR}/"gwt/ui/war
-UI_DIR="${WORK_DIR}/"`find gwt/ui/target -name platform-gwt-ui-* -type d`
-ENG_DIR="${WORK_DIR}/"`find engine/target -name platform-engine-* -type d`
+UI_DIR="${WORK_DIR}/"`find gwt/ui/target -maxdepth 1 -name "platform-gwt-ui-*" -type d`
+ENG_DIR="${WORK_DIR}/"`find engine/target -maxdepth 1 -name "platform-engine-*" -type d`
 
 META_DIR="${ENG_DIR}/"META-INF
 WEB_DIR="${ENG_DIR}/"WEB-INF
