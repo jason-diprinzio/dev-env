@@ -18,7 +18,7 @@ constexpr size_t BUF_LEN =  (1024 * (EVENT_SIZE + 16));
 constexpr bool IS_DIR_RECURSE(const uint8_t flags) { return (flags & WATCH_OPT_RECURSE); }
 constexpr bool IS_DIR_REQUIRED(const uint8_t flags) { return (flags & WATCH_OPT_REQUIRE_DIR); }
 
-using watcher_map = std::map<uint32_t, path_watcher>;
+using watcher_map = std::map<watch_descriptor, path_watcher>;
 
 static inline int is_dir(const std::string& path)
 {
@@ -51,7 +51,7 @@ static inline int check_path(const std::string& path)
     return eval;
 }
 
-static inline void remove_watch(watcher_map watch_table, const std::string& msg, const struct inotify_event *event, 
+static inline void remove_watch(watcher_map& watch_table, const std::string& msg, const struct inotify_event *event,
         const path_watcher& watcher, inotify_handle in_handle)
 {
     std::cerr << msg << " - removing notifications for path: " << watcher.watchpath << std::endl;
@@ -59,9 +59,9 @@ static inline void remove_watch(watcher_map watch_table, const std::string& msg,
     watch_table.erase(event->wd);
 }
 
-static inline void add_watch(watcher_map& watch_table, const std::string& filename, inotify_handle in_handle, const uint8_t watch_flags)
+static inline void add_watch(watcher_map& watch_table, const std::string& filename, inotify_handle in_handle, const uint32_t watch_flags)
 {
-    uint32_t wd = inotify_add_watch(in_handle, filename.c_str(), watch_flags);
+    watch_descriptor wd = inotify_add_watch(in_handle, filename.c_str(), watch_flags);
     if(wd > 0) {
         std::cerr << "adding watch for path: " << filename << std::endl;
         watch_table[wd] = {wd,filename};
@@ -125,7 +125,7 @@ class auto_close
 
 int watch(const watch_args& wargs, volatile bool *run_flag)
 {
-    auto_close<inotify_handle> in_handle(inotify_init());
+    auto_close<inotify_handle> in_handle(inotify_init1(IN_NONBLOCK));
 
     if(*in_handle < 0) {
         perror("failed to initialize inotify");
@@ -139,20 +139,24 @@ int watch(const watch_args& wargs, volatile bool *run_flag)
     char buf[BUF_LEN];
     int retval = 0;
 
-    while(watch_table.size() >0 && *run_flag) {
+    while(!watch_table.empty() && *run_flag) {
         int len, i = 0;
         len = read(*in_handle, buf, BUF_LEN);
         if(len < 0) {
             if(errno == EINTR) {
+                break;
+            } else if(errno == EAGAIN) {
+                // pause, there will be data
+                usleep(5000);
                 continue;
-            }else {
+            } else {
                 perror("read error");
                 retval = errno;
                 *run_flag = false;
                 break;
             }
         } else if(!len) {
-            fprintf(stderr, "no data from read\n");
+            std::cerr << "no data from read" << std::endl;
             continue;
         }
 
@@ -169,7 +173,7 @@ int watch(const watch_args& wargs, volatile bool *run_flag)
                 } else {
                    filename = std::string(pw.watchpath);
                 }
-                /* Just make a callback if one exists. */
+
                 wargs._callback(static_cast<const std::string>(filename), event, pw, nullptr);
 
                 switch(event->mask & 0x00FFFFFF) {
@@ -189,7 +193,7 @@ int watch(const watch_args& wargs, volatile bool *run_flag)
                         break;
                 }
             } catch(std::out_of_range& e) {
-                //TODO do something useful
+                std::cerr << "watcher descriptor is no longer active" << std::endl;
             }
             i += EVENT_SIZE + event->len;
         }

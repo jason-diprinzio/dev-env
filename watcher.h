@@ -5,11 +5,12 @@
 #include <functional>
 
 using inotify_handle = const int32_t;
+using watch_descriptor = int;
 
 constexpr bool IS_DIR_EVENT(const uint32_t mask) { return (((mask >> 24) & 0xf0) != IN_ISDIR); }
 
 struct  path_watcher {
-    uint32_t wd;
+    watch_descriptor wd;
     std::string watchpath;
 }; 
 
@@ -30,7 +31,7 @@ class watch_args {
 
 public:
     uint8_t _options;
-    uint8_t _watch_flags;
+    uint32_t _watch_flags;
     const void * const _userdata;
     std::vector<std::string> _paths;
     watcher_event_callback _callback;

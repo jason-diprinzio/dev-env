@@ -13,6 +13,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 #include "watcher.h"
 
@@ -53,7 +54,7 @@ static inline void timestamp()
     timedata = localtime(&now);
     char datebuf[128];
     strftime(datebuf, 128, "%F %T", timedata);
-    fprintf(stdout, "\n[%s.%ld] ", datebuf, tv.tv_usec);
+    fprintf(stdout, "[%s.%ld] ", datebuf, tv.tv_usec);
 }
 
 static inline void watch_event(const std::string& msg, const std::string& filename, const path_watcher& watcher, const struct inotify_event *event)
@@ -74,21 +75,18 @@ static inline int print_file(const std::string& filename, const path_watcher& wa
         fullpath = ss.str();
     }
 
-    FILE *file = fopen(fullpath.c_str(), "r");
-    if(NULL == file) return errno;
-
-    char fbuf[BUF_LEN], fmt[32];
-    int bytes = 0;
-
-    /* TODO: add tail style option for outputting last N bytes. */
-    fprintf(stdout, "\n==========BEGIN FILE CONTENTS==========\n");
-    while( (bytes = fread(fbuf, sizeof(char), BUF_LEN, file)) != 0) {
-        sprintf(fmt, "%%%d.%ds", bytes, bytes);
-        fprintf(stdout, fmt, fbuf);
+    std::ifstream file(fullpath, std::ios::binary);
+    if(!file) {
+        std::cerr << "file " << filename << " cannot be read" << std::endl;
+        return 1;
     }
-    fprintf(stdout, "\n==========END FILE CONTENTS============\n");
+    std::cout << std::endl << "==========BEGIN FILE CONTENTS==========" << std::endl;
+    std::string chars;
+    while(file >> chars) {
+        std::cout << chars;
+    }
+    std::cout << std::endl << "==========END FILE CONTENTS============" << std::endl;
 
-    fclose(file);
     return 0;
 }
 
@@ -209,9 +207,11 @@ int main(int argc, const char **argv)
     }
 
 #ifdef _DIR
-    watch_args wargs (WATCH_OPT_RECURSE|WATCH_OPT_REQUIRE_DIR, NOTIFY_FLAGS, NULL, paths, handle_event);
+    watch_args wargs (watch_options_e::WATCH_OPT_RECURSE|watch_options_e::WATCH_OPT_REQUIRE_DIR,
+            NOTIFY_FLAGS, NULL, paths, handle_event);
 #else
-    watch_args wargs (WATCH_OPT_NONE, NOTIFY_FLAGS, NULL, paths, handle_event);
+    watch_args wargs (watch_options_e::WATCH_OPT_NONE, 
+            NOTIFY_FLAGS, NULL, paths, handle_event);
 #endif
     return watch(wargs, &RUN_FLAG);
 }
