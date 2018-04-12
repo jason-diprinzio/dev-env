@@ -3,28 +3,30 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <sys/inotify.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <glib.h>
+
+#include <string>
+#include <iostream>
+#include <sstream>
 
 #include "watcher.h"
 
 /* Date formatter buffer length */
-#define DF_BUFLEN 128
-#define BUF_LEN 1024
+constexpr uint8_t DF_BUFLEN  = 128;
+constexpr uint16_t BUF_LEN = 1024;
 
 #ifdef _IN_FLAGS
-#define NOTIFY_FLAGS _IN_FLAGS
+constexpr uint32_t NOTIFY_FLAGS  = _IN_FLAGS;
 #else
-#define NOTIFY_FLAGS IN_ALL_EVENTS
+constexpr uint32_t NOTIFY_FLAGS = IN_ALL_EVENTS;
 #endif
 
-static volatile unsigned char RUN_FLAG = 0;
+static volatile bool RUN_FLAG = true;
 static void sig_handler(int sig)
 {
 
@@ -39,7 +41,7 @@ static void sig_handler(int sig)
 #endif
 
     fprintf(stderr, "stopping....\n");
-    RUN_FLAG = 0;
+    RUN_FLAG = false;
 }
 
 static inline void timestamp()
@@ -54,23 +56,25 @@ static inline void timestamp()
     fprintf(stdout, "\n[%s.%ld] ", datebuf, tv.tv_usec);
 }
 
-static inline void watch_event(const char *msg, const char *filename, const path_watcher_t *watcher, const struct inotify_event *event)
+static inline void watch_event(const std::string& msg, const std::string& filename, const path_watcher& watcher, const struct inotify_event *event)
 {
     timestamp();
     fprintf(stdout, "[wd=%d,mask=x%08x,cookie=%u,length=%d] ", event->wd, event->mask, event->cookie, event->len);
-    fprintf(stdout, "path [%s] in watched path [%s] event [%s]", filename, watcher->watchpath, msg);
+    std::cout << "path " << filename << " in watched path " << watcher.watchpath << " " << msg << std::endl;
 }
 
-static inline int print_file(const char *filename, const path_watcher_t *watcher)
+static inline int print_file(const std::string& filename, const path_watcher& watcher)
 {
-    char fullpath[2048];
-    if(strcmp(watcher->watchpath, filename)) {
-        sprintf(fullpath, "%s/%s", watcher->watchpath, filename);
+    std::string fullpath;
+    if(filename == watcher.watchpath) {
+        fullpath = filename;
     } else {
-        sprintf(fullpath, "%s", filename);
+        std::stringstream ss;
+        ss << watcher.watchpath << "/" << filename;
+        fullpath = ss.str();
     }
 
-    FILE *file = fopen(fullpath, "r");
+    FILE *file = fopen(fullpath.c_str(), "r");
     if(NULL == file) return errno;
 
     char fbuf[BUF_LEN], fmt[32];
@@ -88,27 +92,29 @@ static inline int print_file(const char *filename, const path_watcher_t *watcher
     return 0;
 }
 
-static inline int format_timestamp(const time_t *timestamp, const unsigned long *usec, const int buflen, char *buf)
+static inline int format_timestamp(const time_t *timestamp, const struct timespec *usec, const int buflen, char *buf)
 {
     struct tm *timedata; 
     timedata = localtime(timestamp);
     char datebuf[64];
     strftime(datebuf, 64, "%F %T", timedata);
-    snprintf(buf, buflen, "%s.%lu", datebuf, *usec);
+    snprintf(buf, buflen, "%s.%lu", datebuf, usec->tv_sec);
     return 0;
 }
 
-static inline int stat_file(const char *filename, const path_watcher_t *watcher)
+static inline int stat_file(const std::string& filename, const path_watcher& watcher)
 {
-    char fullpath[2048];
-    if(strcmp(watcher->watchpath, filename)) {
-        sprintf(fullpath, "%s/%s", watcher->watchpath, filename);
+    std::string fullpath;
+    if(filename == watcher.watchpath) {
+        fullpath = filename;
     } else {
-        sprintf(fullpath, "%s", filename);
+        std::stringstream ss;
+        ss << watcher.watchpath << "/" << filename;
+        fullpath = ss.str();
     }
 
     struct stat statbuf;
-    if(stat(fullpath, &statbuf)) {
+    if(stat(fullpath.c_str(), &statbuf)) {
         perror("cannot stat file");
         return 1;
     }
@@ -128,13 +134,13 @@ static inline int stat_file(const char *filename, const path_watcher_t *watcher)
     int othmode = (statbuf.st_mode >> 0)& 0x00000007;
     
     char atime[DF_BUFLEN], mtime[DF_BUFLEN], ctime[DF_BUFLEN];
-    format_timestamp(&statbuf.st_atime, &statbuf.st_atimensec, DF_BUFLEN, atime);
-    format_timestamp(&statbuf.st_mtime, &statbuf.st_mtimensec, DF_BUFLEN, mtime);
-    format_timestamp(&statbuf.st_ctime, &statbuf.st_ctimensec, DF_BUFLEN, ctime);
+    format_timestamp(&statbuf.st_atime, &statbuf.st_atim, DF_BUFLEN, atime);
+    format_timestamp(&statbuf.st_mtime, &statbuf.st_mtim, DF_BUFLEN, mtime);
+    format_timestamp(&statbuf.st_ctime, &statbuf.st_ctim, DF_BUFLEN, ctime);
 
     fprintf(stdout, "\n==========BEGIN METADATA==========\n");
     fprintf(stdout, "  File: '%s'\n  Size: %ld       Blocks: %ld       Inode: %ld       %s\n",
-        filename, statbuf.st_size, statbuf.st_blocks, statbuf.st_ino, type);
+        filename.c_str(), statbuf.st_size, statbuf.st_blocks, statbuf.st_ino, type);
     fprintf(stdout, "  Mode: %x%x%x%x     Uid: %u       Gid: %u\n", 
         sbit,omode, gmode, othmode, statbuf.st_uid, statbuf.st_gid);
     fprintf(stdout, "Access: %s\nModify: %s\nChange: %s\n",
@@ -143,7 +149,7 @@ static inline int stat_file(const char *filename, const path_watcher_t *watcher)
     return 0;
 }
 
-void handle_event(const char *filename, const struct inotify_event *event, const path_watcher_t *pw, const void *data)
+void handle_event(const std::string& filename, const struct inotify_event *event, const path_watcher& pw, const void *)
 {
     switch(event->mask & 0x00FFFFFF) {
         /* General events for directories and files. */
@@ -182,7 +188,7 @@ void handle_event(const char *filename, const struct inotify_event *event, const
             watch_event("modified", filename, pw, event);
             if(IS_DIR_EVENT(event->mask)  ) {
                 if(print_file(filename, pw)) {
-                    fprintf(stderr, "cannot access %s...\n", filename);
+                    std::cerr << "cannot access ..." << filename << std::endl;
                 }
             }
             break;
@@ -192,22 +198,21 @@ void handle_event(const char *filename, const struct inotify_event *event, const
 int main(int argc, const char **argv)
 {
     signal(SIGINT, &sig_handler);
-    const char *pwd[] = { "." };
-    const char **paths = pwd;
-    int numpaths = argc;
+    std::vector<std::string> paths;
 
     if(argc > 1) {
-        paths = &argv[1];
-        numpaths = argc-1;
+        for(auto i=1; i< argc; i++) {
+            paths.push_back(argv[i]);
+        }
+    } else {
+        paths.push_back(".");
     }
 
 #ifdef _DIR
-    watch_args_t wargs = { numpaths, WATCH_OPT_RECURSE|WATCH_OPT_REQUIRE_DIR,
-        NOTIFY_FLAGS, (char**)paths, handle_event, NULL, &RUN_FLAG };
+    watch_args wargs (WATCH_OPT_RECURSE|WATCH_OPT_REQUIRE_DIR, NOTIFY_FLAGS, NULL, paths, handle_event);
 #else
-    watch_args_t wargs = { numpaths, WATCH_OPT_NONE,
-        NOTIFY_FLAGS, (char**)paths, handle_event, NULL, &RUN_FLAG };
+    watch_args wargs (WATCH_OPT_NONE, NOTIFY_FLAGS, NULL, paths, handle_event);
 #endif
-    return watch(&wargs);
+    return watch(wargs, &RUN_FLAG);
 }
 

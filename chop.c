@@ -4,7 +4,7 @@
 #include <errno.h>
 
 #define BUFSIZE 256
-int main(int argc, char ** argv)
+int main(int argc, char **argv)
 {
     
     char buf[BUFSIZE];

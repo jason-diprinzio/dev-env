@@ -1,40 +1,48 @@
 #include <sys/inotify.h>
+#include <string>
+#include <memory>
+#include <vector>
+#include <functional>
 
-#define IS_DIR_EVENT(mask)\
-    (((mask >> 24) & 0xf0) != IN_ISDIR)
+using inotify_handle = const int32_t;
 
-typedef const int inotify_handle_t;
+constexpr bool IS_DIR_EVENT(const uint32_t mask) { return (((mask >> 24) & 0xf0) != IN_ISDIR); }
 
-typedef struct _path_watcher {
-    int wd;
-    unsigned int watchpath_len;
-    char *watchpath;
-} path_watcher_t;
+struct  path_watcher {
+    uint32_t wd;
+    std::string watchpath;
+}; 
 
-typedef void(watcher_event_callback)(const char *filename, const struct inotify_event *event, const path_watcher_t *watcher, const void *userdata);
-
-enum _watch_options {
+enum watch_options_e : uint32_t {
     WATCH_OPT_NONE        = 0x00000000,
     WATCH_OPT_RECURSE     = 0x00000001 << 0,
     WATCH_OPT_REQUIRE_DIR = 0x00000001 << 1
 };
 
-typedef struct _watch_args {
-    int numpaths;
-    int options;
-    int watch_flags;
-    char **paths;
-    watcher_event_callback *callback;
-    void *userdata;
-    volatile unsigned char *run_flag; 
-} watch_args_t;
+using watcher_event_callback =
+    std::function<void (const std::string& filename, const struct inotify_event *event, 
+    const path_watcher& watcher, void *userdata)>;
 
-int new_watch_args(watch_args_t ** newwargs, const int numpaths, const int options, const int watch_flags,
-        const char **paths, watcher_event_callback *callback, const void *userdata, volatile unsigned char *run_flag);
-void free_watch_args(watch_args_t *wargs);
-#define FREE_WATCH_ARGS(wargs) \
-    free_watch_args(wargs); \
-    wargs = 0;
+const watcher_event_callback EMPTY_CALLBACK = [](const std::string&, const struct inotify_event *,
+        const path_watcher& , void *) {/*nop*/};
 
-int watch(const watch_args_t *wargs);
+class watch_args {
+
+public:
+    uint8_t _options;
+    uint8_t _watch_flags;
+    const void * const _userdata;
+    std::vector<std::string> _paths;
+    watcher_event_callback _callback;
+
+    explicit watch_args(const int options, const int watch_flags, 
+            const void* const user_data, std::vector<std::string> paths,
+            watcher_event_callback callback=EMPTY_CALLBACK) 
+        :
+             _options(options), _watch_flags(watch_flags), 
+             _userdata(user_data), _paths(paths), _callback(callback)
+    {}
+};
+
+int watch(const watch_args& wargs, volatile bool *run_flag);
 
