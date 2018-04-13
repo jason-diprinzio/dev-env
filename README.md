@@ -7,11 +7,11 @@
 
 ### How do I get set up? ###
 
-* You'll need libglib2.0-dev to build binaries  (can install via apt if you're running ubuntu)
+* You'll need libboost to build pwcli  (can install via apt if you're running ubuntu)
 
 ### Build and install ###
 
-* run make and optionally sudo make install
+* run make (-j==cpu#) and optionally sudo make install
 
 ### Who do I talk to? ###
 
