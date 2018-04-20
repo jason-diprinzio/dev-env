@@ -1,5 +1,4 @@
 background.sh
-bodtags.sh           
 build_args.sh
 chop                 
 cloudctl             
@@ -23,7 +22,6 @@ release_connector.sh
 release_container.sh 
 reset_atom.sh        
 reset_logs.sh        
-svn-search.pl
 unit.java.sh
 verifycert           
 watchdir             
