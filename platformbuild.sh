@@ -71,7 +71,7 @@ fi
 
 sudo deployplat $@
 
-./liquibutil.sh update
+./liquibutil.sh update default
 
 if [ $? -eq 0 ]
 then
