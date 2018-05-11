@@ -2,6 +2,7 @@ CC=gcc
 CPP=g++
 CC_OPTS=-std=c99 -Wall -O2 -fomit-frame-pointer -I.
 CPP_OPTS=-std=gnu++14 -Wall -Wextra -Werror -O2 -fomit-frame-pointer -I.
+STATIC=-static -static-libstdc++ 
 
 LIB_OPTS=-shared -fPIC
 
@@ -26,10 +27,10 @@ watcher.o:	$(HEADERS) watcher.cpp
 	$(CPP) $(CPP_OPTS) -c -o $@ watcher.cpp
 
 watchdir:	$(OBJS) watch_dir.cpp
-	$(CPP) $(CPP_OPTS) -D_DIR -D_IN_FLAGS=IN_ONLYDIR\|IN_ALL_EVENTS -o $@ $(WATCHER_OBJ) watch_dir.cpp
+	$(CPP) $(CPP_OPTS) $(STATIC) -D_DIR -D_IN_FLAGS=IN_ONLYDIR\|IN_ALL_EVENTS -o $@ $(WATCHER_OBJ) watch_dir.cpp
 
 watchpath:	$(OBJS) watch_dir.cpp
-	$(CPP) $(CPP_OPTS) -o $@ $(WATCHER_OBJ) watch_dir.cpp
+	$(CPP) $(CPP_OPTS) $(STATIC) -o $@ $(WATCHER_OBJ) watch_dir.cpp
 
 pwcli:	pw_mgmt.cpp
 	$(CPP) $(CPP_OPTS) -o $@ pw_mgmt.cpp

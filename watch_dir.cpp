@@ -66,16 +66,17 @@ static inline void watch_event(const std::string& msg, const std::string& filena
 
 static inline int print_file(const std::string& filename)
 {
-    std::ifstream file(filename, std::ios::binary);
+    std::ifstream file(filename, std::ios::binary|std::ios::ate);
     if(!file) {
         std::cerr << "file '" << filename << "' cannot be read" << std::endl;
         return 1;
     }
     std::cout << std::endl << "==========BEGIN FILE CONTENTS==========" << std::endl;
-    std::string chars;
-    while(file >> chars) {
-        std::cout << chars;
-    }
+    auto len = file.tellg();
+    std::string buf(len, '\0');
+    file.seekg(0);
+    file.read(&buf[0], len);
+    std::cout << buf << std::endl;
     std::cout << std::endl << "==========END FILE CONTENTS============" << std::endl;
 
     return 0;
