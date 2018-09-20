@@ -1,6 +1,6 @@
 [Unit]
 Description=Jetty Container
-After=network.target
+After=mysql.service elasticsearch.service terracotta.service
 
 [Service]
 Type=forking
