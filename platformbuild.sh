@@ -72,9 +72,18 @@ fi
 sudo deployplat $@
 
 ./liquibutil.sh update default
+buildresult=$?
+
+if [ $buildresult -ne 0 ]
+then
+    exit $buildresult
+fi
+
+. run-ansible-dev.sh
 
 if [ $? -eq 0 ]
 then
+    echo "restarting jetty"
     sudo service jetty stop
     sudo rm /var/log/boomi/jetty/*.log
     sudo rm /var/log/boomi/jetty/app/*

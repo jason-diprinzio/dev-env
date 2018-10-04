@@ -22,6 +22,7 @@ release_connector.sh
 release_container.sh 
 reset_atom.sh        
 reset_logs.sh        
+run-ansible-dev.sh
 unit.java.sh
 verifycert           
 watchdir             
