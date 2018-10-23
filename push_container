@@ -44,6 +44,7 @@ done
 if [ -z "${CONTAINER_ID}" ]
 then
     echo "must specify a container id"
+    exit 10
 fi
 
 BUILD_NUM=$(get_atom_version)
@@ -67,7 +68,15 @@ install_dist()
 
     UPDATE_FILE="${PLATFORM_UPDATES_DIR}/${DIST_DST_PREFIX}-${BUILD_NUM}.zip"
     cp ${ATOM_SRC_DIR}/${DIST_SRC_PREFIX}-dist-*.zip ${UPDATE_FILE}
+    if [ 0 -ne $? ] 
+    then
+        exit 20
+    fi
     md5file.sh "${UPDATE_FILE}"
+    if [ 0 -ne $? ] 
+    then
+        exit 21
+    fi
 }
 
 set -e
@@ -78,6 +87,7 @@ install_dist "cloudlet-dist/target/container-cloudlet" "update-cloudlet"
 install_dist "shared-server/groovy-dist/target/container-groovy" "update-groovy"
 install_dist "proxy/bridge-dist/target/container-proxy-bridge" "update-proxy-bridge"
 install_dist "proxy/client-dist/target/container-proxy-client" "update-proxy-client"
+install_dist "tradingpartner-dist/target/container-tradingpartner" "update-tradingpartner"
 install_dist "shared-server/embedded-db-dist/target/container-embedded-db" "update-embedded-db"
 install_dist "shared-server/http-dist/target/container-shared-server-http" "update-shared-server-http"
 install_dist "shared-server/extended-security-dist/target/container-extended-security" "update-extended-security"
