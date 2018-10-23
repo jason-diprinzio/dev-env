@@ -10,6 +10,7 @@ function usage() {
 
 DEPLOY_GWT_2_0=0
 DEV_BUILD=0
+SKIPT_UI=0
 
 while getopts ":h-:" opt
 do
@@ -23,6 +24,10 @@ do
                 dev)
                     echo "Deploying development build"
                     DEV_BUILD=1
+                    ;;
+                skipui)
+                    echo "Skipping UI build"
+                    SKIPT_UI=1
                     ;;
                 help)
                     usage

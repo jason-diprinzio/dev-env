@@ -40,29 +40,44 @@ fi
 
 mvnopts+="-DskipTests -Pgwt-dev "
 
-if [ 1 -eq ${DEV_BUILD} ]
-then
-    fix-platform-build.pl co
-fi
-
-rm -rf gwt/ui/war/WEB-INF/classes
-rm -rf gwt/ui/war/WEB-INF/lib
-rm -rf gwt/ui/war/AtomSphere
-
-mvn ${mvnopts} -pl model,common,gwt/model clean install
+mvn ${mvnopts} -pl model,common clean install
 buildresult=$?
-
 if [ $buildresult -ne 0 ]
 then
-    fix-platform-build.pl ci
     exit $buildresult
 fi
 
-# shit sandwich time...eat up
-mvn ${mvnopts} -rf gwt/ui clean install
-buildresult=$?
 
-fix-platform-build.pl ci
+if [ 1 -ne ${SKIPT_UI} ]
+then
+    if [ 1 -eq ${DEV_BUILD} ]
+    then
+        fix-platform-build.pl co
+    fi
+
+    rm -rf gwt/ui/war/WEB-INF/classes
+    rm -rf gwt/ui/war/WEB-INF/lib
+    rm -rf gwt/ui/war/AtomSphere
+
+    mvn ${mvnopts} -pl model,common,gwt/model clean install
+    buildresult=$?
+
+    if [ $buildresult -ne 0 ]
+    then
+        fix-platform-build.pl ci
+        exit $buildresult
+    fi
+
+    # shit sandwich time...eat up
+    mvn ${mvnopts} -rf gwt/ui clean install
+    buildresult=$?
+
+    fix-platform-build.pl ci
+
+else
+    mvn ${mvnopts} -rf engine-hibernate
+    buildresult=$?
+fi
 
 if [ $buildresult -ne 0 ]
 then
@@ -71,7 +86,7 @@ fi
 
 sudo deployplat $@
 
-./liquibutil.sh update default
+./liquibutil.sh update default >/dev/null 
 buildresult=$?
 
 if [ $buildresult -ne 0 ]
@@ -79,7 +94,7 @@ then
     exit $buildresult
 fi
 
-. run-ansible-dev.sh
+sudo -E run-ansible-dev.sh
 
 if [ $? -eq 0 ]
 then
