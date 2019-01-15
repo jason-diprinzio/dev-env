@@ -15,12 +15,14 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <memory>
+#include <thread>
 
 #include "watcher.h"
 
 /* Date formatter buffer length */
 constexpr uint8_t DF_BUFLEN  = 128;
-constexpr uint16_t BUF_LEN = 1024;
+constexpr uint16_t BUF_LEN = 8096;
 
 #ifdef _IN_FLAGS
 constexpr uint32_t NOTIFY_FLAGS  = _IN_FLAGS;
@@ -66,17 +68,19 @@ static inline void watch_event(const std::string& msg, const std::string& filena
 
 static inline int print_file(const std::string& filename)
 {
-    std::ifstream file(filename, std::ios::binary|std::ios::ate);
+    std::ifstream file = std::ifstream(filename, std::ios::binary);
     if(!file) {
         std::cerr << "file '" << filename << "' cannot be read" << std::endl;
         return 1;
     }
+
     std::cout << std::endl << "==========BEGIN FILE CONTENTS==========" << std::endl;
-    auto len = file.tellg();
-    std::string buf(len, '\0');
+    std::string buf(BUF_LEN, '\0');
     file.seekg(0);
-    file.read(&buf[0], len);
-    std::cout << buf << std::endl;
+    while(!file.eof()) {
+        file.read(&buf[0], BUF_LEN);
+        std::cout << buf;
+    }
     std::cout << std::endl << "==========END FILE CONTENTS============" << std::endl;
 
     return 0;
