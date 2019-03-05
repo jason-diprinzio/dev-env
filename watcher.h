@@ -7,7 +7,7 @@
 using inotify_handle = const int32_t;
 using watch_descriptor = int;
 
-constexpr bool IS_DIR_EVENT(const uint32_t mask) { return (((mask >> 24) & 0xf0) != IN_ISDIR); }
+constexpr bool IS_DIR_EVENT(const uint32_t mask) { return ((mask & 0xFF000000) == IN_ISDIR); }
 
 struct  path_watcher {
     watch_descriptor wd;

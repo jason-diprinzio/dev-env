@@ -23,12 +23,7 @@
 /* Date formatter buffer length */
 constexpr uint8_t DF_BUFLEN  = 128;
 constexpr uint16_t BUF_LEN = 8096;
-
-#ifdef _IN_FLAGS
-constexpr uint32_t NOTIFY_FLAGS  = _IN_FLAGS;
-#else
-constexpr uint32_t NOTIFY_FLAGS = IN_ALL_EVENTS;
-#endif
+constexpr uint32_t NOTIFY_FLAGS = IN_ONLYDIR|IN_ALL_EVENTS;
 
 static volatile bool RUN_FLAG = true;
 static void sig_handler(int sig)
@@ -172,7 +167,7 @@ void handle_event(const std::string& filename, const struct inotify_event *event
         case IN_MODIFY :
             /* Print the file contents since they changed. */
             watch_event("modified", filename, pw, event);
-            if(IS_DIR_EVENT(event->mask)  ) {
+            if(!IS_DIR_EVENT(event->mask)  ) {
                 print_file(filename);
             }
             break;
@@ -192,13 +187,9 @@ int main(int argc, const char **argv)
         paths.push_back(".");
     }
 
-#ifdef _DIR
     watch_args wargs (watch_options_e::WATCH_OPT_RECURSE|watch_options_e::WATCH_OPT_REQUIRE_DIR,
             NOTIFY_FLAGS, NULL, paths, handle_event);
-#else
-    watch_args wargs (watch_options_e::WATCH_OPT_NONE,
-            NOTIFY_FLAGS, NULL, paths, handle_event);
-#endif
+
     return watch(wargs, &RUN_FLAG);
 }
 

@@ -21,26 +21,26 @@ constexpr bool IS_DIR_REQUIRED(const uint8_t flags) { return (flags & WATCH_OPT_
 
 using watcher_map = std::map<watch_descriptor, path_watcher>;
 
-static inline int is_dir(const std::string& path)
+static inline bool is_dir(const std::string& path)
 {
     struct stat check_buf;
     if(stat(path.c_str(), &check_buf)){
         std::cerr << "cannot check path: " << path << " - " << strerror(errno) << std::endl;
-        return errno;
+        throw std::runtime_error("cannot access path");
     }
     if(S_ISDIR(check_buf.st_mode)) {
-        return 0;
+        return true;
     }
-    return 1;
+    return false;
 }
 
-static inline int check_is_dir(const std::string& path)
+static inline bool check_is_dir(const std::string& path)
 {
-    if(is_dir(path)) {
+    if(!is_dir(path)) {
         std::cerr << path << "is not a directory" << std::endl;
-        return 1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
 static inline int check_path(const std::string& path)
@@ -60,7 +60,7 @@ static inline void remove_watch(watcher_map& watch_table, const std::string& msg
     watch_table.erase(event->wd);
 }
 
-static inline void add_watch(watcher_map& watch_table, const std::string& filename, inotify_handle in_handle, const uint32_t watch_flags)
+static inline void add_watch(watcher_map& watch_table, const std::string& filename, inotify_handle& in_handle, const uint32_t watch_flags)
 {
     watch_descriptor wd = inotify_add_watch(in_handle, filename.c_str(), watch_flags);
     if(wd > 0) {
@@ -79,6 +79,9 @@ static int recurse_dir(watcher_map& watch_table, const std::string& dirname, ino
     if(!dir){
         return 1;
     }
+
+    add_watch(watch_table, dirname, in_handle, wargs._watch_flags);
+
     struct dirent *entry = 0;
     while( (entry = readdir(dir)) != NULL ) {
         char *prefix = entry->d_name;
@@ -87,10 +90,8 @@ static int recurse_dir(watcher_map& watch_table, const std::string& dirname, ino
         std::stringstream fullname;
         fullname << dirname << "/" << entry->d_name;
 
-        if(is_dir(fullname.str()) == 0) {
+        if(is_dir(fullname.str())) {
             recurse_dir(watch_table, fullname.str(), in_handle, wargs);
-            /* TODO: Q these up to avoid notifications while we search for more directories. */
-            add_watch(watch_table, fullname.str(), in_handle, wargs._watch_flags);
         }
     }
     closedir(dir);
@@ -101,14 +102,13 @@ static void setup_watches(watcher_map& watch_table, const inotify_handle& in_han
 {
     for(auto path : wargs._paths) {
         if(!check_path(path)) {
-            if(IS_DIR_REQUIRED(wargs._options) && check_is_dir(path)) {
+            if(!check_is_dir(path)) {
                 continue;
             }
-            add_watch(watch_table, path, in_handle, wargs._watch_flags);
-        }
 
-        if(IS_DIR_RECURSE(wargs._options)){
-            recurse_dir(watch_table, path, in_handle, wargs);
+            if(IS_DIR_RECURSE(wargs._options)){
+                recurse_dir(watch_table, path, in_handle, wargs);
+            }
         }
     }
 }
@@ -168,8 +168,8 @@ int do_events(const watch_args& wargs, const inotify_handle in_handle, watcher_m
 
                 switch(event->mask & 0x00FFFFFF) {
                     case IN_CREATE :
-                        if(is_dir(filename) == 0)
-                            add_watch(watch_table, static_cast<std::string>(filename), in_handle, wargs._watch_flags);
+                        if(is_dir(filename))
+                            recurse_dir(watch_table, static_cast<std::string>(filename), in_handle, wargs);
                         break;
                     /* Cases where are watchers become invalid. */
                     case IN_DELETE_SELF :
