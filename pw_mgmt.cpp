@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <array>
 #include <map>
+#include <vector>
 
 #include <unistd.h>
 #include <stdlib.h>
