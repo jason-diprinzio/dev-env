@@ -1,9 +1,10 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cstdint>
 #include <array>
+#include <cstdint>
+#include <fstream>
+#include <iostream>
 #include <map>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include <unistd.h>
@@ -14,6 +15,11 @@
 
 constexpr std::size_t BUF_SIZE = 512;
 constexpr std::size_t PW_LEN = 15;
+#if  __APPLE__
+constexpr const char*HOME = "/Users/";
+#else
+constexpr const char*HOME = "/home/";
+#endif
 
 using pw_key = std::string;
 using pw_val = std::string;
@@ -26,14 +32,14 @@ static std::string get_user_name()
   if (pw)
   {
       return pw->pw_name;
-    }
+  }
 
-  return "";
+  throw std::runtime_error("cannot determine user");
 }
 static std::string get_path()
 {
     std::ostringstream path;
-    path << "/home/" << get_user_name() << "/.pwdb";
+    path << HOME << get_user_name() << "/.pwdb";
     return path.str();
 }
 
