@@ -1,0 +1,28 @@
+#!/bin/bash
+
+defaultsession=base
+session=${1:-$defaultsession}
+sessions=`tmux list-sessions`
+if [ 0 -eq $? ]
+then
+    grep -E "^${session}" <<< $sessions
+    if [ $?  -eq 0 ]
+    then
+        echo "base sessions already exists"
+        exit 1
+    fi
+fi
+
+echo "starting new sessions named ${session}"
+
+cd ~/Projects
+tmux -2 new-session -d -s base
+tmux rename-window 'hub-dev'
+tmux send-keys 'cd hub' 'C-m'
+
+tmux new-window 
+tmux rename-window 'hub-build'
+tmux send-keys 'cd hub' 'C-m'
+
+tmux attach -t base
+
