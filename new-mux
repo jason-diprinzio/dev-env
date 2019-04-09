@@ -15,14 +15,15 @@ fi
 
 echo "starting new sessions named ${session}"
 
-cd ~/Projects
+cd ~/src
 tmux -2 new-session -d -s base
-tmux rename-window -t0 'hub-dev'
-tmux send-keys 'cd hub' 'C-m'
+tmux rename-window -t0 'hub-code'
+tmux send-keys 'cd git.rs.ring.com/hub-core/hub-core/src' 'C-m'
 
-tmux new-window 
+tmux new-window
 tmux rename-window -t1 'hub-build'
-tmux send-keys 'cd hub' 'C-m'
+tmux send-keys 'cd vagrant' 'C-m'
+tmux send-keys 'vagrant ssh' 'C-m'
 
 tmux attach -t base
 
