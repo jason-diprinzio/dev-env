@@ -1,6 +1,6 @@
 #!/bin/bash
 
-defaultsession=base
+defaultsession=default
 session=${1:-$defaultsession}
 sessions=`tmux list-sessions`
 if [ 0 -eq $? ]
