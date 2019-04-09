@@ -15,6 +15,7 @@ get_atom_version
 get_project.sh       
 mc5
 md5file.sh           
+new-mux
 platformbuild.sh     
 push_container       
 pwcli
