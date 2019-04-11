@@ -4,8 +4,8 @@
 
  export PATH=~/bin:/usr/local/bin:$PATH
  export EDITOR=vim
- export MAVEN_OPTS='-Xms257m -Xmx512m -XX:PermSize=64m
- export ANT_OPTS='-Xms128m -Xmx256m -XX:PermSize=32m
+ export MAVEN_OPTS='-Xms257m -Xmx512m'
+ export ANT_OPTS='-Xms128m -Xmx256m'
  export FIGNORE=.svn:$FIGNORE
  export JAVA_HOME=
 
