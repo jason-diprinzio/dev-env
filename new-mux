@@ -2,6 +2,14 @@
 
 defaultsession=default
 session=${1:-$defaultsession}
+
+new-window()
+{
+   tmux new-window
+   tmux rename-window shift
+   tmux send-keys 'cd shift' 'C-m'
+}
+
 sessions=`tmux list-sessions`
 if [ 0 -eq $? ]
 then
@@ -23,7 +31,7 @@ tmux send-keys 'cd ../vagrant' 'C-m'
 tmux send-keys 'vagrant ssh' 'C-m'
 
 tmux new-window
-tmux rename-window 'hub-code'
+tmux rename-window 'hub-core'
 tmux send-keys 'cd hub-core/hub-core' 'C-m'
 
 tmux new-window
@@ -31,8 +39,20 @@ tmux rename-window 'plugin-redsky'
 tmux send-keys 'cd hub-core/plugin-redsky' 'C-m'
 
 tmux new-window
-tmux rename-window 'nc2-code'
-tmux send-keys 'cd go' 'C-m'
+tmux rename-window 'cell services'
+tmux send-keys 'cd go/cell-services' 'C-m'
+
+tmux new-window
+tmux rename-window 'sandbox'
+tmux send-keys 'cd sandbox' 'C-m'
+
+tmux new-window
+tmux rename-window 'omv'
+tmux send-keys 'cd ~/.oh-my-vim' 'C-m'
+
+tmux new-window
+tmux rename-window 'omz'
+tmux send-keys 'cd ~/.oh-my-zsh' 'C-m'
 
 tmux attach -t "${session}"
 
