@@ -3,11 +3,11 @@
 defaultsession=default
 session=${1:-$defaultsession}
 
-new-window()
+function new-window
 {
    tmux new-window
-   tmux rename-window shift
-   tmux send-keys 'cd shift' 'C-m'
+   tmux rename-window "${1}"
+   tmux send-keys "cd ${2}" 'C-m'
 }
 
 sessions=`tmux list-sessions`
@@ -21,38 +21,23 @@ then
     fi
 fi
 
-echo "starting new sessions named ${session}"
+echo "starting new session named ${session}"
 
 cd ~/src/git.rs.ring.com/
 tmux -2 new-session -d -s "${session}"
 
+#customize first window
 tmux rename-window 'hub-build'
 tmux send-keys 'cd ../vagrant' 'C-m'
 tmux send-keys 'vagrant ssh' 'C-m'
 
-tmux new-window
-tmux rename-window 'hub-core'
-tmux send-keys 'cd hub-core/hub-core' 'C-m'
-
-tmux new-window
-tmux rename-window 'plugin-redsky'
-tmux send-keys 'cd hub-core/plugin-redsky' 'C-m'
-
-tmux new-window
-tmux rename-window 'cell services'
-tmux send-keys 'cd go/cell-services' 'C-m'
-
-tmux new-window
-tmux rename-window 'sandbox'
-tmux send-keys 'cd sandbox' 'C-m'
-
-tmux new-window
-tmux rename-window 'omv'
-tmux send-keys 'cd ~/.oh-my-vim' 'C-m'
-
-tmux new-window
-tmux rename-window 'omz'
-tmux send-keys 'cd ~/.oh-my-zsh' 'C-m'
+#create the rest
+new-window 'hub-core' 'hub-core/hub-core'
+new-window 'plugin-redsky' 'hub-core/plugin-redsky'
+new-window 'cell services' 'go/cell-services'
+new-window 'sandbox' '../sandbox'
+new-window 'omv' '~/.oh-my-vim'
+new-window 'omz' '~/.oh-my-zsh'
 
 tmux attach -t "${session}"
 
