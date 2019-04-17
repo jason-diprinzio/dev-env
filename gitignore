@@ -1,0 +1,12 @@
+.gitignore
+tags
+.ycm_extra_conf.py
+.idea
+.eclipse
+.project
+.classpath
+.DS_Store
+*.o
+*.s
+*.class
+
