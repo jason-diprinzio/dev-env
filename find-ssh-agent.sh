@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -n ~ | grep "/Users"
+echo -n ~ | grep "/Users" >/dev/null
 ismac=$?
 if [ $ismac -eq 0 ]
 then
