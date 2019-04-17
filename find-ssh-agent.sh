@@ -1,6 +1,15 @@
 #!/bin/bash
 
-agentsock=`find /tmp -name 'agent.*' 2>/dev/null | xargs ls -ltr | awk '{print $9}'`
+echo -n ~ | grep "/Users"
+ismac=$?
+if [ $ismac -eq 0 ]
+then
+   pipe_dir=/var/folders
+else
+   pipe_dir=/tmp
+fi
+
+agentsock=`find "${pipe_dir}" -name 'agent.*' 2>/dev/null | xargs ls -ltr | awk '{print $9}'`
 agentpid=`pgrep -fl ssh-agent | awk '{print $1}'`
 
 if [ -n "$agentsock" ]
