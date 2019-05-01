@@ -14,4 +14,4 @@ fi
 name="mysql-$1"
 docker stop "${name}"
 docker rm "${name}"
-docker run --name "${name}" -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE="$1" -d -p"$2":3306 mysql:5.6
+docker run --name "${name}" -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -e MYSQL_DATABASE="$1" -d -p"$2":3306 mysql:5.6
