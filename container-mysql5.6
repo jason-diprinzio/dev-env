@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ -z "$1" ] 
+then
+    echo "name please"
+    exit 1
+fi
+if [ -z "$2" ] 
+then
+    echo "port please"
+    exit 1
+fi
+
+name="mysql-$1"
+docker stop "${name}"
+docker rm "${name}"
+docker run --name "${name}" -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE="$1" -d -p"$2":3306 mysql:5.6

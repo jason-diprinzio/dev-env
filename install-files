@@ -8,3 +8,5 @@ new-mux
 pwcli
 unit.java.sh
 watchdir             
+editmodified
+container-mysql5.6

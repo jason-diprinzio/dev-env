@@ -32,14 +32,15 @@ tmux send-keys 'cd ../vagrant' 'C-m'
 tmux send-keys 'vagrant ssh' 'C-m'
 
 #create the rest
+new-window 'hub remote' '.'
+new-window 'hub remote' '.'
 new-window 'hub-core' 'hub-core/hub-core'
-new-window 'plugin-redsky' 'hub-core/plugin-redsky'
+new-window 'c++' 'hub-core/hub-core'
+new-window 'redsky' 'hub-core/plugin-redsky'
+new-window 'go' 'go'
 new-window 'cell services' 'go/cell-services'
-new-window 'hub remote' '.'
-new-window 'hub remote' '.'
-new-window 'sandbox' '../sandbox'
-new-window 'omv' '~/.oh-my-vim'
-new-window 'omz' '~/.oh-my-zsh'
+new-window 'java' 'java'
+new-window 'asset services' 'java/asset-services'
 
 tmux attach -t "${session}"
 
