@@ -44,8 +44,12 @@ HEADER_EXTENSIONS = [
         ]
 
 HEADER_DIRECTORIES = [
-        'include'
-        'target/include/amd64'
+        'include',
+        'src',
+        'src/include',
+        'src/main',
+        'src/plugin',
+        'target/include/amd64',
         '~/src/git.rs.ring.com/hub-core/build-common/c++'
         ]
 
