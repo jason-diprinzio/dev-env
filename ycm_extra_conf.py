@@ -19,7 +19,8 @@ BASE_FLAGS = [
         '-I/usr/lib/',
         '-I/usr/include/',
         '-I./target/include/amd64',
-        '-I~/src/git.rs.ring.com/hub-core/build-common/c++'
+        '-I~/src/git.rs.ring.com/hub-core/build-common/c++',
+        '-isystem./target/include/amd64'
         ]
 
 SOURCE_EXTENSIONS = [
@@ -33,6 +34,10 @@ SOURCE_EXTENSIONS = [
 
 SOURCE_DIRECTORIES = [
         'src',
+        'src/include',
+        'src/main',
+        'src/plugin',
+        'src/plugin/device',
         'lib'
         ]
 
@@ -49,6 +54,7 @@ HEADER_DIRECTORIES = [
         'src/include',
         'src/main',
         'src/plugin',
+        'src/plugin/device',
         'target/include/amd64',
         '~/src/git.rs.ring.com/hub-core/build-common/c++'
         ]
