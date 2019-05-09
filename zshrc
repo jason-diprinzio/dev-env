@@ -11,6 +11,7 @@
 
  export GOPATH="$HOME"
  export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
+ export DIPLOMAT_VERSION=2.0.0
 
  eval "$(goenv init -)"
 
