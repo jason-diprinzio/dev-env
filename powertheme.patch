@@ -1,0 +1,34 @@
+diff --git a/powerlevel9k.zsh-theme b/powerlevel9k.zsh-theme
+index 4939cb3..2c01086 100755
+--- a/powerlevel9k.zsh-theme
++++ b/powerlevel9k.zsh-theme
+@@ -619,9 +619,9 @@ prompt_context() {
+   local current_state="DEFAULT"
+   typeset -AH context_states
+   context_states=(
+-    "ROOT"        "yellow"
++    "ROOT"      "yellow"
+     "SUDO"        "yellow"
+-    "DEFAULT"     "yellow"
++    "DEFAULT"   "${DEFAULT_COLOR}"
+     "REMOTE"      "yellow"
+     "REMOTE_SUDO" "yellow"
+   )
+@@ -648,7 +648,7 @@ prompt_context() {
+     current_state="SUDO"
+   fi
+ 
+-  "$1_prompt_segment" "${0}_${current_state}" "$2" "$DEFAULT_COLOR" "${context_states[$current_state]}" "${content}"
++  "$1_prompt_segment" "${0}_${current_state}" "$2" "${DEFAULT_COLOR_INVERTED}" "${context_states[$current_state]}" "${content}"
+ }
+ 
+ ################################################################
+@@ -1040,7 +1040,7 @@ prompt_dir() {
+     current_path=${current_path:s/~/$POWERLEVEL9K_HOME_FOLDER_ABBREVIATION}
+   fi
+ 
+-  "$1_prompt_segment" "$0_${current_state}" "$2" "blue" "$DEFAULT_COLOR" "${current_path}" "${dir_states[$current_state]}"
++  "$1_prompt_segment" "$0_${current_state}" "$2" "blue" "${DEFAULT_COLOR_INVERTED}" "${current_path}" "${dir_states[$current_state]}"
+ }
+ 
+ ################################################################
