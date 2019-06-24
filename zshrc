@@ -1,6 +1,7 @@
 #bindkey -v
 #export KEYTIMEOUT=1
  export TERM="xterm-256color"
+ export LESS="-F -X $LESS"
 
  export PATH=~/bin:/usr/local/bin:$PATH
  export EDITOR=vim
