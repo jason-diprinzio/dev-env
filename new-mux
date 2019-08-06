@@ -29,6 +29,7 @@ tmux -2 new-session -d -s "${session}"
 #customize first window
 tmux rename-window 'hub-build'
 tmux send-keys 'cd ../vagrant' 'C-m'
+tmux send-keys 'vagrant up'
 tmux send-keys 'vagrant ssh' 'C-m'
 
 #create the rest
