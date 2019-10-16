@@ -1,7 +1,7 @@
 #bindkey -v
 #export KEYTIMEOUT=1
  export TERM="xterm-256color"
- export LESS="-F -X $LESS"
+ export LESS=eFRX
 
  export PATH=~/bin:/usr/local/bin:$PATH
  export EDITOR=vim
@@ -13,6 +13,7 @@
  export GOPATH="$HOME"
  export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 
+ export GOENV_DISABLE_GOPATH=1
  eval "$(goenv init -)"
 
 # there's usually one floating around already
