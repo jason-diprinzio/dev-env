@@ -5,7 +5,6 @@ find-ssh-agent.sh
 fix-screens          
 md5file.sh           
 new-mux
-pwcli
 unit.java.sh
 watchdir             
 editmodified

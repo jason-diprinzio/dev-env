@@ -6,7 +6,7 @@ STATIC_OPTS=-static -static-libstdc++
 DYNAMIC_OPTS=
 LINK_OPTS=$(STATIC_OPTS)
 LIB_OPTS=-shared -fPIC
-PROGRAMS=chop watchdir pwcli
+PROGRAMS=chop watchdir
 WATCHER_OBJ=watcher.o
 HEADERS=watcher.h
 OBJS=$(WATCHER_OBJ)
@@ -28,9 +28,6 @@ watcher.o:	$(HEADERS) watcher.cpp
 
 watchdir:	$(OBJS) watch_dir.cpp
 	$(CPP) $(CPP_OPTS) $(LINK_OPTS)  -o $@ $(WATCHER_OBJ) watch_dir.cpp
-
-pwcli:	pw_mgmt.cpp
-	$(CPP) $(CPP_OPTS) -o $@ pw_mgmt.cpp
 
 chop:	chop.c
 	$(CC) $(CC_OPTS) -o chop chop.c

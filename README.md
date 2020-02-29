@@ -7,7 +7,7 @@
 
 ### How do I get set up? ###
 
-* You'll need libboost to build pwcli  (can install via apt if you're running ubuntu)
+* TODO
 
 ### Build and install ###
 
@@ -15,4 +15,4 @@
 
 ### Who do I talk to? ###
 
-* @jdiprinzio
+* @jasondiprinzio
