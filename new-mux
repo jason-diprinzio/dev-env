@@ -23,19 +23,19 @@ fi
 
 echo "starting new session named ${session}"
 
-cd ~/src/git.rs.ring.com/
+cd ~/
 tmux -2 new-session -d -s "${session}"
 
 #customize first window
-tmux rename-window 'hub-build'
-tmux send-keys 'cd ../vagrant' 'C-m'
-tmux send-keys 'vagrant up' 'C-m'
-tmux send-keys 'vagrant ssh' 'C-m'
+tmux rename-window 'build'
+#tmux send-keys 'cd ../vagrant' 'C-m'
+#tmux send-keys 'vagrant up' 'C-m'
+#tmux send-keys 'vagrant ssh' 'C-m'
 
 #create the rest
-new-window 'c++' 'hub-core/'
-new-window 'go' 'go'
-new-window 'java' 'java'
+new-window 'c++' 'workspaces'
+new-window 'c++' 'workspaces'
+new-window 'c++' 'workspaces'
 
 tmux attach -t "${session}"
 
