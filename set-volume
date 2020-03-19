@@ -1,0 +1,6 @@
+#!/bin/sh
+
+sink=$(pactl list sinks short | grep "TI_USB" | awk '{print $1}')
+
+pactl set-sink-volume ${sink} $1
+

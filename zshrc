@@ -5,16 +5,16 @@
 
  export PATH=~/bin:/usr/local/bin:$PATH
  export EDITOR=vim
- export MAVEN_OPTS='-Xms257m -Xmx512m'
- export ANT_OPTS='-Xms128m -Xmx256m'
- export FIGNORE=.svn:$FIGNORE
- export JAVA_HOME=
+# export MAVEN_OPTS='-Xms257m -Xmx512m'
+# export ANT_OPTS='-Xms128m -Xmx256m'
+# export FIGNORE=.svn:$FIGNORE
+# export JAVA_HOME=
 
  export GOPATH="$HOME"
  export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 
  export GOENV_DISABLE_GOPATH=1
- eval "$(goenv init -)"
+#eval "$(goenv init -)"
 
 # there's usually one floating around already
 . find-ssh-agent.sh
