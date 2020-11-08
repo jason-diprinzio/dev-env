@@ -1,8 +1,4 @@
 #!/bin/bash
-
-xrandr --output DP2 --pos 0x500 --mode 2560x1440
-xrandr --output HDMI1 --pos 2560x0 --rotate left
-xrandr --output eDP1 --pos 4000x1480 --primary
-
-#xrandr --output "DP-1" --pos 0x390 --mode 1920x1080 --refresh 60 --primary
-#xrandr --output "DP-2" --pos 1920x0 --mode 1920x1080 --rotate left --refresh 60
+#xrandr --output HDMI1 --pos 1080x0 --mode 3840x2160 --primary
+xrandr --output HDMI1 --pos 1080x0 --mode 2560x1440  --primary
+xrandr --output HDMI2 --pos 0x0    --mode 1920x1080  --left-of HDMI1

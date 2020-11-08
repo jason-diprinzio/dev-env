@@ -18,7 +18,7 @@ $(cd "${install_dir}" && git clone https://github.com/vim/vim.git)
 $(cd "${install_dir}"/vim && bash -c ./configure --prefix=/usr/local --with-compiledby=jasondiprinzio --with-features=huge --enable-multibyte --enable-terminal --enable-pythoninterp --enable-python3interp --enable-perlinterp --enable-xim)
 $(cd "${install_dir}"; make && sudo make install)
 
-git clone git@github.com:jason-diprinzio/vim-config.git ~/.oh-my-vim
+git clone https://github.com/jason-diprinzio/vim-config.git ~/.oh-my-vim
 cp "${base_dir}"/vimrc ~/.vimrc
 git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 

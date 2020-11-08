@@ -2,5 +2,5 @@
 
 sink=$(pactl list sinks short | grep RUNNING | cut -f 1)
 
-pactl set-sink-volume ${sink} $1
+pactl set-sink-mute ${sink} toggle 
 
