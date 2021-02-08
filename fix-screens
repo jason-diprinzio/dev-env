@@ -1,4 +1,4 @@
 #!/bin/bash
-#xrandr --output HDMI1 --pos 1080x0 --mode 3840x2160 --primary
-xrandr --output HDMI1 --pos 1080x0 --mode 2560x1440  --primary
-xrandr --output HDMI2 --pos 0x0    --mode 1920x1080  --left-of HDMI1
+#xrandr --output HDMI1 --pos 1920x0  --mode 3840x2160 --primary
+xrandr --output HDMI1 --pos 1920x0   --mode 2560x1440 --primary
+xrandr --output HDMI2 --pos 0x440    --mode 1920x1080

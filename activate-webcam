@@ -1,0 +1,7 @@
+#!/bin/bash
+
+source_id=$(pactl list sources short | grep alsa_input.usb-HDA_Webcam_USB_HDA_Webcam_USB_HDA_Webcam_USB-02.analog-stereo | cut -f 1)
+
+pactl suspend-source ${source_id} 0
+pactl set-source-mute ${source_id} 0
+pactl set-source-volume ${source_id} 100%

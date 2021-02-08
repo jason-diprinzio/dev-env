@@ -13,6 +13,7 @@ main = xmonad $ def {
     }
     `additionalKeysP`
     [ ("M-x f" , spawn "firefox")
+    , ("M-x g" , spawn "google-chrome-stable")
     , ("M-x s" , spawn "slack")
     ] 
     `additionalKeys`
