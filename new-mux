@@ -33,9 +33,9 @@ tmux rename-window 'build'
 #tmux send-keys 'vagrant ssh' 'C-m'
 
 #create the rest
-new-window 'c++' 'workspaces'
-new-window 'c++' 'workspaces'
-new-window 'c++' 'workspaces'
+new-window 'c++' 'projects'
+new-window 'c++' 'projects'
+new-window 'c++' 'projects'
 
 tmux attach -t "${session}"
 

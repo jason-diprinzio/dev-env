@@ -231,4 +231,3 @@ int watch(const watch_args& wargs, volatile bool *run_flag)
 
     return retval;
 }
-
