@@ -1,7 +1,11 @@
 #!/bin/bash
 
-defaultsession=default
+shopt -s expand_aliases
+
+defaultsession=main
 session=${1:-$defaultsession}
+
+alias tmux='tmux -L $session'
 
 function new-window
 {
@@ -10,11 +14,11 @@ function new-window
    tmux send-keys "cd ${2}" 'C-m'
 }
 
-sessions=`tmux list-sessions`
-if [ 0 -eq $? ]
-then
+sessions=`tmux list-sessions 2>&1`
+rv=$?
+if [ 0 -eq $rv ]; then
     grep -E "^${session}" <<< $sessions
-    if [ $?  -eq 0 ]
+    if [ $? -eq 0 ]
     then
         tmux attach -t "${session}"
         exit 0
@@ -22,14 +26,12 @@ then
 fi
 
 echo "starting new session named ${session}"
-
 cd ~/
 tmux -2 new-session -d -s "${session}"
-
 tmux setw synchronize-panes on
-
 #customize first window
 tmux rename-window 'build'
+tmux send-keys "cd projects" 'C-m'
 
 #create the rest
 new-window 'c++' 'projects'
