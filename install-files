@@ -12,3 +12,4 @@ addemup
 set-volume
 toggle-mute
 activate-webcam
+manifest2submodule.pl
