@@ -1,39 +1,39 @@
 Language: Cpp
-Standard: c++17 
-BasedOnStyle: llvm 
+Standard: c++17
+BasedOnStyle: llvm
 AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
 AlignArrayOfStructures: Right
-AlignConsecutiveAssignments: None 
+AlignConsecutiveAssignments: None
 AlignConsecutiveBitFields: AcrossComments
-AlignConsecutiveDeclarations: None 
+AlignConsecutiveDeclarations: None
 AlignConsecutiveMacros: AcrossComments
 AlignEscapedNewlines: Right
 AlignOperands: Align
 AlignTrailingComments: true
-AllowAllConstructorInitializersOnNextLine: true 
+AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortEnumsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
-AllowShortIfStatementsOnASingleLine: Never 
+AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: Inline
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
-AlwaysBreakTemplateDeclarations: Yes 
+AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: false
 BinPackParameters: false
 BitFieldColonSpacing: None
-BraceWrapping: 
+BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
   AfterControlStatement: Never
   AfterEnum: false
   AfterExternBlock: false
-  AfterFunction: false
+  AfterFunction: true
   AfterNamespace: false
   AfterStruct: false
   BeforeCatch: false
@@ -47,18 +47,18 @@ BraceWrapping:
 BreakBeforeBraces: Custom
 BreakBeforeConceptDeclarations: true
 BreakBeforeTernaryOperators : false
-BreakConstructorInitializers: AfterColon 
-BreakInheritanceList: AfterColon 
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList: AfterColon
 BreakStringLiterals: false
 ColumnLimit: 0
-CompactNamespaces: true 
-ConstructorInitializerAllOnOneLineOrOnePerLine: false 
+CompactNamespaces: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
-Cpp11BracedListStyle: true 
+Cpp11BracedListStyle: true
 EmptyLineAfterAccessModifier: Leave
 EmptyLineBeforeAccessModifier: Always
-FixNamespaceComments: true 
+FixNamespaceComments: true
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: 'boost'
@@ -71,7 +71,7 @@ IncludeCategories:
     CaseSensitive: false
 IndentAccessModifiers: false
 IndentCaseBlocks: false
-IndentCaseLabels: false 
+IndentCaseLabels: false
 IndentExternBlock: false
 IndentGotoLabels: false
 IndentPPDirectives: AfterHash
@@ -82,21 +82,21 @@ InsertTrailingCommas: Wrapped
 KeepEmptyLinesAtTheStartOfBlocks: false
 LambdaBodyIndentation: OuterScope
 MaxEmptyLinesToKeep: 1
-NamespaceIndentation: None 
-PointerAlignment: Middle 
+NamespaceIndentation: None
+PointerAlignment: Middle
 ReferenceAlignment: Middle
-SortIncludes: CaseSensitive 
-SortUsingDeclarations: false  
+SortIncludes: CaseSensitive
+SortUsingDeclarations: false
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: true
 SpaceAfterTemplateKeyword: false
 SpaceAroundPointerQualifiers: Before
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeCaseColon: false
-SpaceBeforeCpp11BracedList: true 
-SpaceBeforeCtorInitializerColon: true 
-SpaceBeforeInheritanceColon: true 
-SpaceBeforeParens: ControlStatements 
+SpaceBeforeCpp11BracedList: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
 SpaceBeforeRangeBasedForLoopColon: true
 SpaceBeforeSquareBrackets: false
 SpaceInEmptyParentheses: false
@@ -105,7 +105,7 @@ SpacesInAngles: Never
 SpacesInCStyleCastParentheses: false
 SpacesInConditionalStatement: false
 SpacesInContainerLiterals: true
-SpacesInLineCommentPrefix: 
+SpacesInLineCommentPrefix:
   Minimum: 1
   Maximum: 1
 SpacesInParentheses: false
