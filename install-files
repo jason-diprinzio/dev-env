@@ -3,7 +3,7 @@ exception.java.sh
 find-ssh-agent.sh
 fix-screens          
 md5file.sh           
-new-mux
+attach-mux
 unit.java.sh
 watchdir             
 editmodified
