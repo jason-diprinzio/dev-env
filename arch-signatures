@@ -1,0 +1,16 @@
+#!/bin/bash
+
+sudo pacman-key --populate archlinux manjaro
+sudo pacman-key --populate archlinux
+sudo pacman-key --refresh-keys
+sudo pacman -S archlinux-keyring
+sudo pacman-key --refresh-keys
+sudo rm -rf /etc/pacman.d/gnupg/
+sudo pacman-key --init
+sudo pacman-key --refresh-keys
+sudo pacman -S archlinux-keyring
+sudo rm -rf /etc/pacman.d/gnupg/
+sudo pacman-key --init
+sudo pacman-key --populate archlinux
+sudo pacman-key --refresh-keys
+

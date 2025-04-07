@@ -1,0 +1,2 @@
+bind chrpath diffstat rpcsvc-proto cmake cpio inetutils wget dig dnsmasq docker hdparm inetutils json-glib nfs-utils openssh openssl tree pam parted python-pip systemd systemd-homed the_silver_searcher tmux tree minicom libvirt virt-install virt-manager virt-viewerqemu-emulators-full qemu-img dnsmasq dmidecode cloud-utils whois gtest clang libinput e2fsprogs ctags more-utils gptfdisk boost wpa_supplicant wireless_tools mtools
+bluez bluez-tools bluez-utils cpupower systat bc i2c-tools virtiofsd
