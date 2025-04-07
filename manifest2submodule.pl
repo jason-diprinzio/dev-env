@@ -15,10 +15,23 @@ open(my $manifest_file, '<', $file) or die $!;
 
 my %remotes;
 my @projects;
+my $default_remote;
 
 # TODO create entry for default repo
 while(my $line = <$manifest_file>) {
     chomp $line;
+    if( $line =~ /^\s*<default/) {
+        my @fields = split(" ", $line);
+        my $name;
+        my $fetch;
+        for(@fields) {
+            if($_ =~ /remote="/) {
+                my @a = split("\"", $_);
+                $default_remote = $a[1];
+            }
+        }
+
+    }
     if( $line =~ /^\s*<remote/) {
         my @fields = split(" ", $line);
         my $name;
@@ -38,6 +51,7 @@ while(my $line = <$manifest_file>) {
     } elsif ( $line =~ /^\s*<project/){
         my @fields = split(" ", $line);
         my $project = {};
+        $project->{remote} = $default_remote;
         for(@fields) {
             if($_ =~ /name="/) {
                 my @a = split("\"", $_);
