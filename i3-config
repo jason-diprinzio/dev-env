@@ -64,6 +64,7 @@ bindsym 0x1005ff70 exec gnome-terminal
 #apps
 bindsym $mod+Shift+s exec slack
 bindsym $mod+Shift+f exec firefox
+bindsym $mod+Shift+b exec chromium
 bindsym $mod+Shift+g exec google-chrome-stable
 bindsym $mod+Shift+b exec chromium
 
